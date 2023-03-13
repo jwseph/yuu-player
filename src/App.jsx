@@ -177,7 +177,7 @@ function ImportPage({playlists, updatePlaylists}) {
         </h2>
         <p className="mt-2 text-center text-sm text-zinc-400">
           Download playlist informaton from Youtube for remote playback.<br/>
-          You don't need to import the entire playlist if you've already imported it on another device.
+          The playlist must be public, and you don't need to import the entire playlist if you've already imported it on another device.
         </p>
       </div>
       <form className="mt-8 space-y-6" onSubmit={e => e.preventDefault()}>
