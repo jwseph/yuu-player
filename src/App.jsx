@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import './App.css'
 import { Route, Link, Routes, useNavigate } from 'react-router-dom';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
+import YouTube from 'react-youtube';
 
 const getPlaylistId = (url) => {
   console.log(url);
@@ -88,7 +89,15 @@ function PlayerPage({playlist, updatePlaylists, videos}) {
         </p>
       </div>
       <div>
-        <iframe className='w-full aspect-video rounded-lg shadow-lg' src={'https://www.youtube-nocookie.com/embed/'+queue[0]} title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen></iframe>
+        <div className='w-full aspect-video rounded-lg shadow-lg'>
+          <YouTube videoId={queue[0]} opts={{host: 'https://www.youtube-nocookie.com', playerVars: {autoplay: 1}}}
+            onEnd={() => {
+              queue.push(queue.shift());
+              setCount(count+1);
+              updatePlaylists();
+            }}
+          />
+        </div>
       </div>
       <div className='flex bg-zinc-800 border border-zinc-700 overflow-hidden rounded-lg'>
         <button className='px-4 py-2 border-r border-zinc-700 last:border-0 hover:bg-zinc-700 focus:bg-zinc-700'
