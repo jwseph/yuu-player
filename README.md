@@ -14,6 +14,5 @@ A YouTube playlist player made with React and Tailwind
 
 ## Current issues
 - Playlists aren't saved in localStorage correctly
-- Video size is scuffed
 - Video names in queue don't correspond to the real video ID in long playlists
   - Might be due to removed videos
