@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import { Route, Link, Routes, useNavigate } from 'react-router-dom';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
@@ -77,7 +77,9 @@ function SelectPlaylistPage({playlists, syncPlaylists, setPlaylist}) {
 
 function PlayerPage({playlist, updatePlaylists, videos}) {
   const queue = playlist.queue;
+  const playerRef = useRef(null);
   const [count, setCount] = useState(0);
+  const [autoplaying, setAutoplaying] = useState(false);
   return (
     <div className="w-full max-w-md space-y-8 mb-8">
       <div>
@@ -89,12 +91,20 @@ function PlayerPage({playlist, updatePlaylists, videos}) {
         </p>
       </div>
       <div>
-        <div className='w-full aspect-video rounded-lg shadow-lg'>
-          <YouTube videoId={queue[0]} opts={{host: 'https://www.youtube-nocookie.com', playerVars: {autoplay: 1}}}
+        <div className='w-full aspect-video rounded-lg shadow-lg overflow-hidden group'>
+          <YouTube videoId={queue[0]} opts={{host: 'https://www.youtube-nocookie.com', playerVars: {autoplay: 1, playsinline: 1}}}
+            ref={playerRef}
             onEnd={() => {
               queue.push(queue.shift());
               setCount(count+1);
+              playerRef.current.internalPlayer.mute();
               updatePlaylists();
+              setAutoplaying(true);
+            }}
+            onPlay={() => {
+              if (!autoplaying) return;
+              playerRef.current.internalPlayer.unmute();
+              setAutoplaying(false);
             }}
           />
         </div>
