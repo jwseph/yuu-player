@@ -6,6 +6,7 @@ A YouTube playlist player made with React and Tailwind
   - YouTube and YouTube Music don't shuffle videos properly: you end up with a video in a range of ±200
 - No ads
 - Autoplay
+- Saved playlist queues
 
 ## Future features
 - Autoplay on iOS mobile
@@ -13,6 +14,5 @@ A YouTube playlist player made with React and Tailwind
 - Better GUI (only a prototype rn)
 
 ## Current issues
-- Playlists aren't saved in localStorage correctly
 - Video names in queue don't correspond to the real video ID in long playlists
   - Might be due to removed videos

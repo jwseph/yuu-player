@@ -75,11 +75,13 @@ function SelectPlaylistPage({playlists, syncPlaylists, setPlaylist}) {
   )
 }
 
-function PlayerPage({playlist, updatePlaylists, videos}) {
-  const queue = playlist.queue;
+function PlayerPage({playlist, updateQueue, videos}) {
+  const queue = useRef(playlist.queue);
   const playerRef = useRef(null);
   const [count, setCount] = useState(0);
-  const [autoplaying, setAutoplaying] = useState(false);
+  const autoplaying = useRef(true);
+  const previouslyMuted = useRef(false);
+  const volume = useRef(100);
   return (
     <div className="w-full max-w-md space-y-8 mb-8">
       <div>
@@ -92,19 +94,21 @@ function PlayerPage({playlist, updatePlaylists, videos}) {
       </div>
       <div>
         <div id='videoContainer' className='w-full aspect-video rounded-lg shadow-lg overflow-hidden group'>
-          <YouTube videoId={queue[0]} opts={{host: 'https://www.youtube-nocookie.com', playerVars: {autoplay: 1, playsinline: 1}}}
+          <YouTube videoId={queue.current[0]} opts={{host: 'https://www.youtube-nocookie.com', playerVars: {autoplay: 1, playsinline: 1, mute: 1}}}
             ref={playerRef}
-            onEnd={() => {
-              queue.push(queue.shift());
+            onEnd={async () => {
+              queue.current.push(queue.current.shift());
               setCount(count+1);
-              playerRef.current.internalPlayer.mute();
-              updatePlaylists();
-              setAutoplaying(true);
+              updateQueue(queue.current);
+              autoplaying.current = true;
+              volume.current = await playerRef.current.internalPlayer.getVolume();
+              previouslyMuted.current = await playerRef.current.internalPlayer.isMuted();
             }}
-            onPlay={() => {
-              if (!autoplaying) return;
-              playerRef.current.internalPlayer.unMute();
-              setAutoplaying(false);
+            onPlay={async () => {
+              if (!autoplaying.current) return;
+              autoplaying.current = false;
+              await playerRef.current.internalPlayer.setVolume(volume.current);
+              if (!previouslyMuted.current) await playerRef.current.internalPlayer.unMute();
             }}
           />
         </div>
@@ -112,9 +116,9 @@ function PlayerPage({playlist, updatePlaylists, videos}) {
       <div className='flex bg-zinc-800 border border-zinc-700 overflow-hidden rounded-lg'>
         <button className='px-4 py-2 border-r border-zinc-700 last:border-0 hover:bg-zinc-700 focus:bg-zinc-700'
           onClick={() => {
-            queue.unshift(queue.pop());
+            queue.current.unshift(queue.current.pop());
             setCount(count+1);
-            updatePlaylists();
+            updateQueue(queue.current);
           }}
         >
           Prev
@@ -122,9 +126,9 @@ function PlayerPage({playlist, updatePlaylists, videos}) {
         <div className='px-4 py-2 border-r border-zinc-700 last:border-0 flex-1'></div>
         <button className='px-4 py-2 border-r border-zinc-700 last:border-0 hover:bg-zinc-700 focus:bg-zinc-700'
           onClick={() => {
-            shuffleQueue(queue);
+            shuffleQueue(queue.current);
             setCount(count+1);
-            updatePlaylists();
+            updateQueue(queue.current);
           }}
         >
           Shuffle
@@ -132,9 +136,9 @@ function PlayerPage({playlist, updatePlaylists, videos}) {
         <div className='px-4 py-2 border-r border-zinc-700 last:border-0 flex-1'></div>
         <button className='px-4 py-2 border-r border-zinc-700 last:border-0 hover:bg-zinc-700 focus:bg-zinc-700'
           onClick={() => {
-            queue.push(queue.shift());
+            queue.current.push(queue.current.shift());
             setCount(count+1);
-            updatePlaylists();
+            updateQueue(queue.current);
           }}
         >
           Next
@@ -142,7 +146,7 @@ function PlayerPage({playlist, updatePlaylists, videos}) {
       </div>
       <div>
         <div className='border border-zinc-700 rounded-lg overflow-hidden shadow-sm'>
-          {queue.map((videoId, i) => {
+          {queue.current.map((videoId, i) => {
             let video = videos[videoId];
             window.videos = videos;
             return video && (
@@ -172,7 +176,12 @@ function PlayerSwitcher({playlists, syncPlaylists, updatePlaylists}) {
         setPlaylist(playlist);
       }} playlists={playlists} syncPlaylists={syncPlaylists}/>
     ) : (
-      <PlayerPage playlist={playlist} updatePlaylists={updatePlaylists} videos={videos}/>
+      <PlayerPage playlist={playlist} videos={videos} updateQueue={(queue) => {
+        playlist.queue = queue;
+        const newPlaylists = {};
+        newPlaylists[getPlaylistId(playlist.url)] = playlist;
+        updatePlaylists(newPlaylists);
+      }}/>
     )
   )
 }
@@ -226,10 +235,9 @@ function App() {
   const [count, setCount] = useState(0)
   const [playlists, setPlaylists] = useState(JSON.parse(localStorage.playlists || '{}'))
 
-  function updatePlaylists() {
-    setPlaylists(playlists);
+  function updatePlaylists(newPlaylists) {
+    setPlaylists({...playlists, ...newPlaylists});
     localStorage.playlists = JSON.stringify(playlists);
-    console.log('supposed to update playlists in localStorage');
   }
 
   async function syncPlaylists() {
