@@ -91,7 +91,7 @@ function PlayerPage({playlist, updatePlaylists, videos}) {
         </p>
       </div>
       <div>
-        <div className='w-full aspect-video rounded-lg shadow-lg overflow-hidden group'>
+        <div id='videoContainer' className='w-full aspect-video rounded-lg shadow-lg overflow-hidden group'>
           <YouTube videoId={queue[0]} opts={{host: 'https://www.youtube-nocookie.com', playerVars: {autoplay: 1, playsinline: 1}}}
             ref={playerRef}
             onEnd={() => {
@@ -103,7 +103,7 @@ function PlayerPage({playlist, updatePlaylists, videos}) {
             }}
             onPlay={() => {
               if (!autoplaying) return;
-              playerRef.current.internalPlayer.unmute();
+              playerRef.current.internalPlayer.unMute();
               setAutoplaying(false);
             }}
           />
