@@ -82,6 +82,14 @@ function PlayerPage({playlist, updateQueue, videos}) {
   const autoplaying = useRef(true);
   const previouslyMuted = useRef(false);
   const volume = useRef(100);
+  async function updatePlayer() {
+    setCount(count+1);
+    updateQueue(queue.current);
+    if (autoplaying.current) return;
+    autoplaying.current = true;
+    volume.current = await playerRef.current.internalPlayer.getVolume();
+    previouslyMuted.current = await playerRef.current.internalPlayer.isMuted();
+  }
   return (
     <div className="w-full max-w-md space-y-8 mb-8">
       <div>
@@ -94,15 +102,15 @@ function PlayerPage({playlist, updateQueue, videos}) {
       </div>
       <div>
         <div id='videoContainer' className='w-full aspect-video rounded-lg shadow-lg overflow-hidden group'>
-          <YouTube videoId={queue.current[0]} opts={{host: 'https://www.youtube-nocookie.com', playerVars: {autoplay: 1, playsinline: 1, mute: 1}}}
+          <YouTube videoId={queue.current[0]}
+            opts={{
+              host: 'https://www.youtube-nocookie.com',
+              playerVars: {autoplay: 1, playsinline: 1, mute: 1, origin: location.origin},
+            }}
             ref={playerRef}
             onEnd={async () => {
               queue.current.push(queue.current.shift());
-              setCount(count+1);
-              updateQueue(queue.current);
-              autoplaying.current = true;
-              volume.current = await playerRef.current.internalPlayer.getVolume();
-              previouslyMuted.current = await playerRef.current.internalPlayer.isMuted();
+              await updatePlayer();
             }}
             onPlay={async () => {
               if (!autoplaying.current) return;
@@ -110,52 +118,59 @@ function PlayerPage({playlist, updateQueue, videos}) {
               await playerRef.current.internalPlayer.setVolume(volume.current);
               if (!previouslyMuted.current) await playerRef.current.internalPlayer.unMute();
             }}
+            // onstate
           />
         </div>
       </div>
       <div className='flex bg-zinc-800 border border-zinc-700 overflow-hidden rounded-lg'>
         <button className='px-4 py-2 border-r border-zinc-700 last:border-0 hover:bg-zinc-700 focus:bg-zinc-700'
-          onClick={() => {
+          onClick={async () => {
             queue.current.unshift(queue.current.pop());
-            setCount(count+1);
-            updateQueue(queue.current);
+            await updatePlayer();
           }}
         >
           Prev
         </button>
         <div className='px-4 py-2 border-r border-zinc-700 last:border-0 flex-1'></div>
         <button className='px-4 py-2 border-r border-zinc-700 last:border-0 hover:bg-zinc-700 focus:bg-zinc-700'
-          onClick={() => {
+          onClick={async () => {
             shuffleQueue(queue.current);
-            setCount(count+1);
-            updateQueue(queue.current);
+            await updatePlayer();
           }}
         >
           Shuffle
         </button>
         <div className='px-4 py-2 border-r border-zinc-700 last:border-0 flex-1'></div>
         <button className='px-4 py-2 border-r border-zinc-700 last:border-0 hover:bg-zinc-700 focus:bg-zinc-700'
-          onClick={() => {
+          onClick={async () => {
             queue.current.push(queue.current.shift());
-            setCount(count+1);
-            updateQueue(queue.current);
+            await updatePlayer();
           }}
         >
           Next
         </button>
       </div>
       <div>
-        <div className='border border-zinc-700 rounded-lg overflow-hidden shadow-sm'>
+        <div className='flex flex-col border border-zinc-700 rounded-lg overflow-hidden shadow-sm'>
           {queue.current.map((videoId, i) => {
             let video = videos[videoId];
             window.videos = videos;
             return video && (
-              <div key={videoId} className='bg-zinc-800 border-b border-zinc-700 last:border-0 px-4 py-2'>
+              <button key={videoId} className='bg-zinc-800 hover:bg-zinc-700 border-b border-zinc-700 last:border-0 px-4 py-2'
+                onClick={async () => {
+                  while (i--) queue.current.push(queue.current.shift());
+                  await updatePlayer();
+                }}
+              >
                 <div className='flex items-center space-x-3'>
-                  <div className='text-xs text-zinc-400 w-7 text-right'>{i || '-'}</div>
-                  <h1 className='truncate text-sm flex-1'>{video.title}</h1>
+                  <div className='text-xs text-zinc-400 w-7 text-right'>{i || '-->'}</div>
+                  <LazyLoadImage
+                    className='h-5 aspect-video rounded-sm'
+                    src={video.thumbnails.small}
+                  />
+                  <h1 className='truncate text-xs text-left flex-1'>{video.title}</h1>
                 </div>
-              </div>
+              </button>
             )
           })}
         </div>
