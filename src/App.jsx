@@ -97,7 +97,7 @@ function PlayerPage({playlist, updateQueue, videos}) {
           Playlist player
         </h2>
         <p className="mt-2 text-center text-sm text-zinc-400">
-          Selected playlist: {playlist.title}
+          Selected playlist: {playlist.title} - {playlist.queue.length} videos
         </p>
       </div>
       <div>
@@ -154,8 +154,7 @@ function PlayerPage({playlist, updateQueue, videos}) {
         <div className='flex flex-col border border-zinc-700 rounded-lg overflow-hidden shadow-sm'>
           {queue.current.map((videoId, i) => {
             let video = videos[videoId];
-            window.videos = videos;
-            return video && (
+            return (
               <button key={videoId} className='bg-zinc-800 hover:bg-zinc-700 border-b border-zinc-700 last:border-0 px-4 py-2'
                 onClick={async () => {
                   while (i--) queue.current.push(queue.current.shift());
@@ -269,7 +268,15 @@ function App() {
       const oldVideoIds = playlist.videoIds;
       playlist.videoIds = {...newVideoIds};
       for (const videoId in oldVideoIds) delete newVideoIds[videoId];
-      playlist.queue = Object.keys(newVideoIds).concat(playlist.queue);  // may contain video ids that were removed
+      playlist.queue = Object.keys(newVideoIds).concat(playlist.queue);
+
+      // Remove from queue video ids that were removed from the playlist
+      let size = 0;
+      for (let i in playlist.queue) {
+        if (!playlist.videoIds[playlist.queue[i]]) continue;
+        playlist.queue[size++] = playlist.queue[i];
+      }
+      playlist.queue.length = size;
     }
     updatePlaylists();
   }
