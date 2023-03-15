@@ -8,8 +8,9 @@ A YouTube playlist player made with React and Tailwind
 - Autoplay
 - Saved playlist queues
 
-## Future features
-- Autoplay on iOS mobile
+## Future features (Todo)
+- Autoplay on iOS mobile 💀
+- Improve speed when the playlist has thousands of items
 - Play audio even when phone is off
 - Better GUI (only a prototype rn)
 
