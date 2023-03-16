@@ -79,17 +79,18 @@ function PlayerPage({playlist, updateQueue, videos}) {
   const queue = useRef(playlist.queue);
   const playerRef = useRef(null);
   const [count, setCount] = useState(0);
-  const [cnt, setCnt] = useState(0);
   const autoplaying = useRef(true);
   const previouslyMuted = useRef(false);
   const volume = useRef(100);
+  const initialVideo = useRef(false);
   async function updatePlayer() {
-    setCount(count+1);
-    updateQueue(queue.current);
-    if (autoplaying.current) return;
-    autoplaying.current = true;
-    volume.current = await playerRef.current.internalPlayer.getVolume();
-    previouslyMuted.current = await playerRef.current.internalPlayer.isMuted();
+    playerRef.current.internalPlayer.loadVideoById(queue.current[0]);
+    // setCount(count+1);
+    // updateQueue(queue.current);
+    // if (autoplaying.current) return;
+    // autoplaying.current = true;
+    // volume.current = await playerRef.current.internalPlayer.getVolume();
+    // previouslyMuted.current = await playerRef.current.internalPlayer.isMuted();
   }
   return (
     <div className="w-full max-w-md space-y-8 mb-8">
@@ -106,13 +107,12 @@ function PlayerPage({playlist, updateQueue, videos}) {
           <YouTube /*videoId={queue.current[0]}*/
             opts={{
               host: 'https://www.youtube-nocookie.com',
-              playerVars: {autoplay: 1, playsinline: 1, mute: 1, origin: location.origin},
+              playerVars: {autoplay: 1, origin: location.origin},
             }}
             ref={playerRef}
             onEnd={async () => {
-              await playerRef.current.internalPlayer.nextVideo();
-              // queue.current.push(queue.current.shift());
-              // await updatePlayer();
+              queue.current.push(queue.current.shift());
+              await updatePlayer();
             }}
             onPlay={async () => {
               if (!autoplaying.current) return;
@@ -121,16 +121,10 @@ function PlayerPage({playlist, updateQueue, videos}) {
               if (!previouslyMuted.current) await playerRef.current.internalPlayer.unMute();
             }}
             onStateChange={async () => {
-              if (cnt > 0) return;
-              setCnt(cnt+1);
-              console.log(playerRef.current.internalPlayer);
-              for (const videoId of queue.current.slice(0, 10)) {
-                console.log(videoId);
-                await playerRef.current.internalPlayer.cueVideoById({videoId});
-              }
-              // await playerRef.current.internalPlayer.setPlaylist(queue.current.slice(0, 10));
+              if (initialVideo.current) return;
+              initialVideo.current = true;
+              await updatePlayer();
             }}
-            // onstate
           />
         </div>
       </div>
