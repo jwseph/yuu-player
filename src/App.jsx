@@ -79,6 +79,7 @@ function PlayerPage({playlist, updateQueue, videos}) {
   const queue = useRef(playlist.queue);
   const playerRef = useRef(null);
   const [count, setCount] = useState(0);
+  const [cnt, setCnt] = useState(0);
   const autoplaying = useRef(true);
   const previouslyMuted = useRef(false);
   const volume = useRef(100);
@@ -102,21 +103,32 @@ function PlayerPage({playlist, updateQueue, videos}) {
       </div>
       <div>
         <div id='videoContainer' className='w-full aspect-video rounded-lg shadow-lg overflow-hidden group'>
-          <YouTube videoId={queue.current[0]}
+          <YouTube /*videoId={queue.current[0]}*/
             opts={{
               host: 'https://www.youtube-nocookie.com',
               playerVars: {autoplay: 1, playsinline: 1, mute: 1, origin: location.origin},
             }}
             ref={playerRef}
             onEnd={async () => {
-              queue.current.push(queue.current.shift());
-              await updatePlayer();
+              await playerRef.current.internalPlayer.nextVideo();
+              // queue.current.push(queue.current.shift());
+              // await updatePlayer();
             }}
             onPlay={async () => {
               if (!autoplaying.current) return;
               autoplaying.current = false;
               await playerRef.current.internalPlayer.setVolume(volume.current);
               if (!previouslyMuted.current) await playerRef.current.internalPlayer.unMute();
+            }}
+            onStateChange={async () => {
+              if (cnt > 0) return;
+              setCnt(cnt+1);
+              console.log(playerRef.current.internalPlayer);
+              for (const videoId of queue.current.slice(0, 10)) {
+                console.log(videoId);
+                await playerRef.current.internalPlayer.cueVideoById({videoId});
+              }
+              // await playerRef.current.internalPlayer.setPlaylist(queue.current.slice(0, 10));
             }}
             // onstate
           />
