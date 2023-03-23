@@ -3,6 +3,7 @@ import './App.css'
 import { Route, Link, Routes, useNavigate } from 'react-router-dom';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import YouTube from 'react-youtube';
+import { IoShuffleOutline, IoPlaySkipBackOutline, IoPlaySkipForwardOutline, IoPauseOutline, IoPlayOutline } from 'react-icons/io5';
 
 const getPlaylistId = (url) => {
   console.log(url);
@@ -75,23 +76,33 @@ function SelectPlaylistPage({playlists, syncPlaylists, setPlaylist}) {
   )
 }
 
+function PauseButton({addPlayingListener, onClick}) {
+  const [playing, setPlaying] = useState(true)
+  useEffect(() => {
+    addPlayingListener((playing) => setPlaying(playing));
+  }, [playing, setPlaying])
+  return (
+    <button className='px-4 py-2 border-r border-zinc-700 last:border-0 hover:bg-zinc-700 focus:bg-zinc-700'
+      onClick={async () => {
+        setPlaying(!playing);
+        await onClick();
+      }}
+    >
+      {!playing ? <IoPlayOutline className='w-5 h-5'/> : <IoPauseOutline className='w-5 h-5'/>}
+    </button>
+  )
+}
+
 function PlayerPage({playlist, updateQueue, videos}) {
   const queue = useRef(playlist.queue);
   const playerRef = useRef(null);
   const [count, setCount] = useState(0);
-  const autoplaying = useRef(true);
-  const previouslyMuted = useRef(false);
-  const volume = useRef(100);
-  const initialVideo = useRef(false);
+  const playingRef = useRef(true);
+  const playingCallback = useRef();
   async function updatePlayer() {
     playerRef.current.internalPlayer.loadVideoById(queue.current[0]);
     setCount(count+1);
     updateQueue(queue.current);
-    // updateQueue(queue.current);
-    // if (autoplaying.current) return;
-    // autoplaying.current = true;
-    // volume.current = await playerRef.current.internalPlayer.getVolume();
-    // previouslyMuted.current = await playerRef.current.internalPlayer.isMuted();
   }
   const youtubePlayer = useMemo(() => 
   <YouTube videoId={queue.current[0]}
@@ -104,16 +115,10 @@ function PlayerPage({playlist, updateQueue, videos}) {
       queue.current.push(queue.current.shift());
       await updatePlayer();
     }}
-    onPlay={async () => {
-      if (!autoplaying.current) return;
-      autoplaying.current = false;
-      await playerRef.current.internalPlayer.setVolume(volume.current);
-      if (!previouslyMuted.current) await playerRef.current.internalPlayer.unMute();
-    }}
-    onStateChange={async () => {
-      if (initialVideo.current) return;
-      initialVideo.current = true;
-      await updatePlayer();
+    onStateChange={async (state) => {
+      if (state.data == 1) playingRef.current = true;
+      if (state.data == 2) playingRef.current = false;
+      if (playingCallback.current) playingCallback.current(playingRef.current);
     }}
   />, [queue, playerRef, updatePlayer])
 
@@ -133,31 +138,39 @@ function PlayerPage({playlist, updateQueue, videos}) {
         </div>
       </div>
       <div className='flex bg-zinc-800 border border-zinc-700 overflow-hidden rounded-lg'>
-        <button className='px-4 py-2 border-r border-zinc-700 last:border-0 hover:bg-zinc-700 focus:bg-zinc-700'
+        <button className='invisible px-4 py-2 border-l border-zinc-700 hover:bg-zinc-700 focus:bg-zinc-700'><IoShuffleOutline className='w-5 h-5'/></button>
+        <div className='flex-1'></div>
+        <button className='px-4 py-2 border-x border-zinc-700 hover:bg-zinc-700 focus:bg-zinc-700'
           onClick={async () => {
             queue.current.unshift(queue.current.pop());
             await updatePlayer();
           }}
         >
-          Prev
+          <IoPlaySkipBackOutline className='w-5 h-5'/>
         </button>
-        <div className='px-4 py-2 border-r border-zinc-700 last:border-0 flex-1'></div>
-        <button className='px-4 py-2 border-r border-zinc-700 last:border-0 hover:bg-zinc-700 focus:bg-zinc-700'
+        <PauseButton addPlayingListener={(callback) => playingCallback.current = callback}
           onClick={async () => {
-            shuffleQueue(queue.current);
-            await updatePlayer();
+            if (playingRef.current) await playerRef.current.internalPlayer.pauseVideo();
+            else await playerRef.current.internalPlayer.playVideo();
+            playingRef.current = !playingRef.current;
           }}
-        >
-          Shuffle
-        </button>
-        <div className='px-4 py-2 border-r border-zinc-700 last:border-0 flex-1'></div>
+        />
         <button className='px-4 py-2 border-r border-zinc-700 last:border-0 hover:bg-zinc-700 focus:bg-zinc-700'
           onClick={async () => {
             queue.current.push(queue.current.shift());
             await updatePlayer();
           }}
         >
-          Next
+          <IoPlaySkipForwardOutline className='w-5 h-5'/>
+        </button>
+        <div className='flex-1'></div>
+        <button className='px-4 py-2 border-l border-zinc-700 hover:bg-zinc-700 focus:bg-zinc-700'
+          onClick={async () => {
+            shuffleQueue(queue.current);
+            await updatePlayer();
+          }}
+        >
+          <IoShuffleOutline className='w-5 h-5'/>
         </button>
       </div>
       <div>
