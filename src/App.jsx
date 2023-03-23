@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import './App.css'
 import { Route, Link, Routes, useNavigate } from 'react-router-dom';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
@@ -85,13 +85,37 @@ function PlayerPage({playlist, updateQueue, videos}) {
   const initialVideo = useRef(false);
   async function updatePlayer() {
     playerRef.current.internalPlayer.loadVideoById(queue.current[0]);
-    // setCount(count+1);
+    setCount(count+1);
     // updateQueue(queue.current);
     // if (autoplaying.current) return;
     // autoplaying.current = true;
     // volume.current = await playerRef.current.internalPlayer.getVolume();
     // previouslyMuted.current = await playerRef.current.internalPlayer.isMuted();
   }
+  const youtubePlayer = useMemo(() => 
+  <YouTube videoId={queue.current[0]}
+    opts={{
+      host: 'https://www.youtube-nocookie.com',
+      playerVars: {autoplay: 1, origin: location.origin},
+    }}
+    ref={playerRef}
+    onEnd={async () => {
+      queue.current.push(queue.current.shift());
+      await updatePlayer();
+    }}
+    onPlay={async () => {
+      if (!autoplaying.current) return;
+      autoplaying.current = false;
+      await playerRef.current.internalPlayer.setVolume(volume.current);
+      if (!previouslyMuted.current) await playerRef.current.internalPlayer.unMute();
+    }}
+    onStateChange={async () => {
+      if (initialVideo.current) return;
+      initialVideo.current = true;
+      await updatePlayer();
+    }}
+  />, [queue, playerRef, updatePlayer])
+
   return (
     <div className="w-full max-w-md space-y-8 mb-8">
       <div>
@@ -104,28 +128,7 @@ function PlayerPage({playlist, updateQueue, videos}) {
       </div>
       <div>
         <div id='videoContainer' className='w-full aspect-video rounded-lg shadow-lg overflow-hidden group'>
-          <YouTube /*videoId={queue.current[0]}*/
-            opts={{
-              host: 'https://www.youtube-nocookie.com',
-              playerVars: {autoplay: 1, origin: location.origin},
-            }}
-            ref={playerRef}
-            onEnd={async () => {
-              queue.current.push(queue.current.shift());
-              await updatePlayer();
-            }}
-            onPlay={async () => {
-              if (!autoplaying.current) return;
-              autoplaying.current = false;
-              await playerRef.current.internalPlayer.setVolume(volume.current);
-              if (!previouslyMuted.current) await playerRef.current.internalPlayer.unMute();
-            }}
-            onStateChange={async () => {
-              if (initialVideo.current) return;
-              initialVideo.current = true;
-              await updatePlayer();
-            }}
-          />
+          {youtubePlayer}
         </div>
       </div>
       <div className='flex bg-zinc-800 border border-zinc-700 overflow-hidden rounded-lg'>
