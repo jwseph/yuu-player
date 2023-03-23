@@ -10,10 +10,10 @@ A YouTube playlist player made with React and Tailwind
 
 ## Future features (Todo)
 - Improve speed when the playlist has thousands of items
-- Play audio even when phone is off
+- Play audio even when phone is off (might not work for all devices)
 - Better GUI (only a prototype rn)
 
 ## Current issues
-- Autoplay on iOS mobile 💀
-- Video names in queue don't correspond to the real video ID in long playlists
-  - Might be due to removed videos
+- Occasionally, video names in the queue don't correspond to their real video ID
+  - Might be due to hidden videos
+  - Requires backend fix
