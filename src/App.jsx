@@ -86,6 +86,7 @@ function PlayerPage({playlist, updateQueue, videos}) {
   async function updatePlayer() {
     playerRef.current.internalPlayer.loadVideoById(queue.current[0]);
     setCount(count+1);
+    updateQueue(queue.current);
     // updateQueue(queue.current);
     // if (autoplaying.current) return;
     // autoplaying.current = true;
