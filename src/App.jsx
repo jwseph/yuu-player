@@ -56,8 +56,8 @@ function SelectPlaylistPage({playlists, syncPlaylists, setPlaylist}) {
                 <img src={playlist.thumbnails.small} className='aspect-square object-cover h-28 rounded-md shadow-sm'/>
               </a>
               <div className='flex flex-col flex-1 items-start'>
-                <h3 className='text-lg text-zinc-50 font-bold'>{playlist.title}</h3>
-                <div className='flex flex-wrap'>
+                <h3 className='text-lg text-zinc-50 font-bold text-left leading-tight'>{playlist.title}</h3>
+                <div className='flex flex-wrap pt-1'>
                   <div className='text-sm text-zinc-300 font-medium'>{playlist.channel}</div>
                   <div className='px-2 text-sm text-zinc-400'>·</div>
                   {!playlist.queue ? (
