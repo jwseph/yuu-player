@@ -6,7 +6,6 @@ import YouTube from 'react-youtube';
 import { IoShuffleOutline, IoPlaySkipBackOutline, IoPlaySkipForwardOutline, IoPauseOutline, IoPlayOutline } from 'react-icons/io5';
 
 const getPlaylistId = (url) => {
-  console.log(url);
   return new URL(url).searchParams.get('list');
 }
 
@@ -130,7 +129,6 @@ function PlayerPage({playlist, updateQueue, videos}) {
   async function updatePlayer() {
     playerRef.current.internalPlayer.loadVideoById(queue.current[0]);
     updateQueue(queue.current);
-    console.log(queueUpdateCallback.current);
     queueUpdateCallback.current(queue.current);
   }
   const youtubePlayer = useMemo(() => 
