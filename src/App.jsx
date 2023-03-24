@@ -97,7 +97,7 @@ function PlaylistQueue({initialQueue, videos, onClick, setQueueUpdateCallback}) 
                 <h1 className='truncate text-xs text-left flex-1 font-semibold'>{video.title}</h1>
                 <h1 className='truncate text-xs text-left text-zinc-400'>{video.channel}</h1>
               </div>
-              <div className='pl-2 text-xs text-zinc-500 text-left'>{i || '#'}</div>
+              <div className='pl-2 text-xs text-zinc-600 text-left'>{i || '#'}</div>
             </div>
           </button>
         )
