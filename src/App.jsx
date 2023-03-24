@@ -89,12 +89,15 @@ function PlaylistQueue({initialQueue, videos, onClick, setQueueUpdateCallback}) 
             onClick={() => onClick(i)}
           >
             <div className='flex items-center space-x-3'>
-              <div className='text-xs text-zinc-400 w-7 text-right'>{i || '-->'}</div>
               <LazyLoadImage
-                className='h-5 aspect-video rounded-sm'
+                className='h-7 aspect-video rounded-sm'
                 src={video.thumbnails.small}
               />
-              <h1 className='truncate text-xs text-left flex-1'>{video.title}</h1>
+              <div className='inline-flex flex-col flex-1 truncate'>
+                <h1 className='truncate text-xs text-left flex-1 font-semibold'>{video.title}</h1>
+                <h1 className='truncate text-xs text-left text-zinc-400'>{video.channel}</h1>
+              </div>
+              <div className='pl-2 text-xs text-zinc-500 text-left'>{i || '#'}</div>
             </div>
           </button>
         )
