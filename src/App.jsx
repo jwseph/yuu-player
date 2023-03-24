@@ -76,6 +76,34 @@ function SelectPlaylistPage({playlists, syncPlaylists, setPlaylist}) {
   )
 }
 
+function PlaylistQueue({initialQueue, videos, onClick, setQueueUpdateCallback}) {
+  const [queue, setQueue] = useState(initialQueue);
+  useEffect(() => {
+    setQueueUpdateCallback((queue) => setQueue([...queue]));
+  }, [queue, setQueue]);
+  return (
+    <div className='flex flex-col border border-zinc-700 rounded-lg overflow-hidden shadow-sm'>
+      {queue.map((videoId, i) => {
+        let video = videos[videoId];
+        return (
+          <button key={videoId} className='bg-zinc-800 hover:bg-zinc-700 border-b border-zinc-700 last:border-0 px-4 py-2'
+            onClick={() => onClick(i)}
+          >
+            <div className='flex items-center space-x-3'>
+              <div className='text-xs text-zinc-400 w-7 text-right'>{i || '-->'}</div>
+              <LazyLoadImage
+                className='h-5 aspect-video rounded-sm'
+                src={video.thumbnails.small}
+              />
+              <h1 className='truncate text-xs text-left flex-1'>{video.title}</h1>
+            </div>
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
 function PauseButton({addPlayingListener, onClick}) {
   const [playing, setPlaying] = useState(true)
   useEffect(() => {
@@ -96,13 +124,14 @@ function PauseButton({addPlayingListener, onClick}) {
 function PlayerPage({playlist, updateQueue, videos}) {
   const queue = useRef(playlist.queue);
   const playerRef = useRef(null);
-  const [count, setCount] = useState(0);
   const playingRef = useRef(true);
   const playingCallback = useRef();
+  const queueUpdateCallback = useRef();
   async function updatePlayer() {
     playerRef.current.internalPlayer.loadVideoById(queue.current[0]);
-    setCount(count+1);
     updateQueue(queue.current);
+    console.log(queueUpdateCallback.current);
+    queueUpdateCallback.current(queue.current);
   }
   const youtubePlayer = useMemo(() => 
   <YouTube videoId={queue.current[0]}
@@ -174,28 +203,13 @@ function PlayerPage({playlist, updateQueue, videos}) {
         </button>
       </div>
       <div>
-        <div className='flex flex-col border border-zinc-700 rounded-lg overflow-hidden shadow-sm'>
-          {queue.current.map((videoId, i) => {
-            let video = videos[videoId];
-            return (
-              <button key={videoId} className='bg-zinc-800 hover:bg-zinc-700 border-b border-zinc-700 last:border-0 px-4 py-2'
-                onClick={async () => {
-                  while (i--) queue.current.push(queue.current.shift());
-                  await updatePlayer();
-                }}
-              >
-                <div className='flex items-center space-x-3'>
-                  <div className='text-xs text-zinc-400 w-7 text-right'>{i || '-->'}</div>
-                  <LazyLoadImage
-                    className='h-5 aspect-video rounded-sm'
-                    src={video.thumbnails.small}
-                  />
-                  <h1 className='truncate text-xs text-left flex-1'>{video.title}</h1>
-                </div>
-              </button>
-            )
-          })}
-        </div>
+        <PlaylistQueue videos={videos} initialQueue={queue.current}
+          setQueueUpdateCallback={(callback) => queueUpdateCallback.current = callback}
+          onClick={async (i) => {
+            while (i--) queue.current.push(queue.current.shift());
+            await updatePlayer();
+          }}
+        />
       </div>
     </div>
   )
@@ -270,17 +284,22 @@ function ImportPage({playlists, updatePlaylists}) {
 
 function App() {
   const [count, setCount] = useState(0)
-  const [playlists, setPlaylists] = useState(JSON.parse(localStorage.playlists || '{}'))
+  const playlists = useRef(JSON.parse(localStorage.playlists || '{}'));
+
+  function savePlaylists(newPlaylists) {
+    playlists.current = {...playlists.current, ...newPlaylists};
+    localStorage.playlists = JSON.stringify(playlists.current);
+  }
 
   function updatePlaylists(newPlaylists) {
-    setPlaylists({...playlists, ...newPlaylists});
-    localStorage.playlists = JSON.stringify(playlists);
+    savePlaylists(newPlaylists);
+    setCount(count+1);
   }
 
   async function syncPlaylists() {
-    for (const playlistId in playlists) {
-      await updatePlaylistInfo(playlists, updatePlaylists, playlistId);
-      const playlist = playlists[playlistId];
+    for (const playlistId in playlists.current) {
+      await updatePlaylistInfo(playlists.current, updatePlaylists, playlistId);
+      const playlist = playlists.current[playlistId];
       let resp = await fetch('https://kamiak-io.fly.dev/yuu/get_playlist_video_ids?playlist_id='+playlistId);
       let newVideoIds = await resp.json();
       if (newVideoIds == null) continue;
@@ -307,8 +326,8 @@ function App() {
   return (
     <div className="flex flex-col min-h-full items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-zinc-900 selection:bg-red-600/80 selection:text-white">
       <Routes>
-        <Route path='/' element={<PlayerSwitcher playlists={playlists} updatePlaylists={updatePlaylists} syncPlaylists={syncPlaylists}/>}></Route>
-        <Route path='/import' element={<ImportPage playlists={playlists} updatePlaylists={updatePlaylists}/>}></Route>
+        <Route path='/' element={<PlayerSwitcher playlists={playlists.current} updatePlaylists={savePlaylists} syncPlaylists={syncPlaylists}/>}></Route>
+        <Route path='/import' element={<ImportPage playlists={playlists.current} updatePlaylists={updatePlaylists}/>}></Route>
       </Routes>
       <footer className='fixed bottom-2 p-4 text-sm text-zinc-400 rounded-lg backdrop-blur-lg bg-zinc-900/80 flex'>
         <div className='pr-3 border-r border-zinc-700 font-semibold'>
