@@ -144,7 +144,7 @@ function PlayerPage({playlist, updateQueue, videos}) {
     setTitle();
   }, [playlist]);
   function setTitle() {
-    document.title = `Yuu · ${playlist.title} · ${videos[queue.current[0]].title}`;
+    document.title = `${playlist.title} · ${videos[queue.current[0]].title} · Yuu`;
   }
   async function updatePlayer() {
     playerRef.current.internalPlayer.loadVideoById(queue.current[0]);
@@ -241,7 +241,7 @@ function PlayerSwitcher({playlists, syncPlaylists, updatePlaylists}) {
   const [videos, setVideos] = useState();
   useEffect(() => {
     setTab(0);
-    document.title = 'Yuu · Select a playlist';
+    document.title = 'Select a playlist · Yuu';
   }, [])
   return (
     !playlist?.queue ? (
@@ -315,7 +315,7 @@ function ImportPage({playlists, updatePlaylists}) {
   const [playlistUrl, setPlaylistUrl] = useState()
   useEffect(() => {
     setTab(1);
-    document.title = 'Yuu · Import a playlist';
+    document.title = 'Import a playlist · Yuu';
   }, [])
   return (
     <div className="w-full max-w-md space-y-8 mb-8">
