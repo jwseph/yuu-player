@@ -45,36 +45,43 @@ function SelectPlaylistPage({playlists, syncPlaylists, setPlaylist}) {
           Select a saved playlist to play
         </p>
       </div>
-      <div className='flex flex-col gap-2'>
-        {Object.keys(playlists).map(playlistId => {
-          let playlist = playlists[playlistId];
-          return (
-            <button key={playlistId} className={'items-center w-full bg-zinc-800 px-6 py-4 flex gap-5 rounded-lg shadow-sm' + (!playlist || !playlist.queue ? '' : ' cursor-pointer hover:bg-zinc-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600')} tabIndex={!playlist || !playlist.queue ? '-1' : '0'}
-              onClick={() => {
-                setPlaylist(playlist)
-                history.replaceState(null, 'Youtube Player', '/play?list='+playlistId);
-              }}
-            >
-              <a tabIndex='-1' href={playlist.url} target='_blank' onClick={e => e.stopPropagation()}>
-                <img src={playlist.thumbnails.small} className='aspect-square object-cover h-28 rounded-md shadow-sm'/>
-              </a>
-              <div className='flex flex-col flex-1 items-start'>
-                <h3 className='text-lg text-zinc-50 font-bold text-left leading-tight'>{playlist.title}</h3>
-                <div className='flex flex-wrap pt-1'>
-                  <div className='text-sm text-zinc-300 font-medium'>{playlist.channel}</div>
-                  <div className='px-2 text-sm text-zinc-400'>·</div>
-                  {!playlist.queue ? (
-                    <div className='text-sm text-zinc-400'>Importing videos...</div>
-                  ) : (
-                    <div className='text-sm text-zinc-400'>{Object.keys(playlist.videoIds).length} videos</div>
-                  )}
+      {!Object.keys(playlists).length ? (
+        <div className='text-center text-md text-zinc-400 flex flex-wrap justify-center gap-1'>
+          <div>You don't have any saved playlists.</div>
+          <Link to='/import' className='text-zinc-200 underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'>Import a playlist</Link>
+        </div>
+      ) : (
+        <div className='flex flex-col gap-2'>
+          {Object.keys(playlists).map(playlistId => {
+            let playlist = playlists[playlistId];
+            return (
+              <button key={playlistId} className={'items-center w-full bg-zinc-800 px-6 py-4 flex gap-5 rounded-lg shadow-sm' + (!playlist || !playlist.queue ? '' : ' cursor-pointer hover:bg-zinc-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600')} tabIndex={!playlist || !playlist.queue ? '-1' : '0'}
+                onClick={() => {
+                  setPlaylist(playlist)
+                  history.replaceState(null, 'Youtube Player', '/play?list='+playlistId);
+                }}
+              >
+                <a tabIndex='-1' href={playlist.url} target='_blank' onClick={e => e.stopPropagation()}>
+                  <img src={playlist.thumbnails.small} className='aspect-square object-cover h-28 rounded-md shadow-sm'/>
+                </a>
+                <div className='flex flex-col flex-1 items-start'>
+                  <h3 className='text-lg text-zinc-50 font-bold text-left leading-tight'>{playlist.title}</h3>
+                  <div className='flex flex-wrap pt-1'>
+                    <div className='text-sm text-zinc-300 font-medium'>{playlist.channel}</div>
+                    <div className='px-2 text-sm text-zinc-400'>·</div>
+                    {!playlist.queue ? (
+                      <div className='text-sm text-zinc-400'>Importing videos...</div>
+                    ) : (
+                      <div className='text-sm text-zinc-400'>{Object.keys(playlist.videoIds).length} videos</div>
+                    )}
+                  </div>
+                  <div className='text-sm text-zinc-400 whitespace-pre-line text-left pt-2'>{playlist.description || '[No description]'}</div>
                 </div>
-                <div className='text-sm text-zinc-400 whitespace-pre-line text-left pt-2'>{playlist.description || '[No description]'}</div>
-              </div>
-            </button>
-          )
-        })}
-      </div>
+              </button>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }
@@ -167,10 +174,10 @@ function PlayerPage({playlist, updateQueue, videos}) {
     <div className="w-full max-w-lg space-y-8 mb-8">
       <div>
         <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-zinc-50">
-          Playlist player
+          {playlist.title}
         </h2>
         <p className="mt-2 text-center text-sm text-zinc-400">
-          {playlist.title} · {playlist.queue.length} videos
+          {playlist.queue.length} videos
         </p>
       </div>
       <div className='flex flex-col gap-3'>
@@ -406,10 +413,10 @@ function App() {
       </Routes>
       <footer className='fixed bottom-0 px-6 py-5 text-sm text-zinc-400 backdrop-blur-lg bg-zinc-900/80 flex z-50 border-1 border-zinc-900 border-b-0 w-full justify-center'>
         <div className='pr-3 border-r border-zinc-700 font-semibold focus-visible:text-zinc-200'>
-          <Link to='/' className={'rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600' + (tab == 0 ? ' text-zinc-300' : '')} onClick={() => setPlayerCount(playerCount+1)}>Player</Link>
+          <Link to='/' className={'inline-flex h-full rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600' + (tab == 0 ? ' text-zinc-300' : '')} onClick={() => setPlayerCount(playerCount+1)}>Player</Link>
         </div>
         <div className='px-3 border-r border-zinc-700 font-semibold'>
-          <Link to='/import' className={'rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600' + (tab == 1 ? ' text-zinc-300' : '')}>Import</Link>
+          <Link to='/import' className={'inline-flex h-full rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600' + (tab == 1 ? ' text-zinc-300' : '')}>Import</Link>
         </div>
         <a href="https://github.com/jwseph/youtube-player" target='_blank' className='rounded-sm font-semibold ml-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600'>Github</a>
       </footer>
