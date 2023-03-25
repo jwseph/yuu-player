@@ -35,7 +35,7 @@ function SelectPlaylistPage({playlists, syncPlaylists, setPlaylist}) {
   }, [])
 
   return (
-    <div className="w-full max-w-md space-y-8 mb-8">
+    <div className="w-full max-w-lg space-y-8 mb-8">
       <div>
         <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-zinc-50">
           Playlist player
@@ -44,11 +44,11 @@ function SelectPlaylistPage({playlists, syncPlaylists, setPlaylist}) {
           Select a saved playlist to play
         </p>
       </div>
-      <div className='rounded-lg shadow-lg overflow-hidden border border-zinc-700'>
+      <div className='flex flex-col gap-2'>
         {Object.keys(playlists).map(playlistId => {
           let playlist = playlists[playlistId];
           return (
-            <button key={playlistId} className={'items-center w-full bg-zinc-800 border-b border-zinc-700 last:border-b-0 px-6 py-4 flex gap-5' + (!playlist || !playlist.queue ? '' : ' cursor-pointer hover:bg-zinc-700 focus:bg-zinc-700')} tabIndex={!playlist || !playlist.queue ? '-1' : '0'}
+            <button key={playlistId} className={'items-center w-full bg-zinc-800 px-6 py-4 flex gap-5 rounded-lg shadow-sm' + (!playlist || !playlist.queue ? '' : ' cursor-pointer hover:bg-zinc-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600')} tabIndex={!playlist || !playlist.queue ? '-1' : '0'}
               onClick={() => setPlaylist(playlist)}
             >
               <a tabIndex='-1' href={playlist.url} target='_blank' onClick={e => e.stopPropagation()}>
@@ -81,11 +81,11 @@ function PlaylistQueue({initialQueue, videos, onClick, setQueueUpdateCallback}) 
     setQueueUpdateCallback((queue) => setQueue([...queue]));
   }, [queue, setQueue]);
   return (
-    <div className='flex flex-col border border-zinc-700 rounded-lg overflow-hidden shadow-sm'>
-      {queue.map((videoId, i) => {
+    <div className='flex flex-col rounded-lg'>
+      {queue.slice(0, 70).map((videoId, i) => {
         let video = videos[videoId];
         return (
-          <button key={videoId} className='bg-zinc-800 hover:bg-zinc-700 border-b border-zinc-700 last:border-0 px-4 py-2'
+          <button key={videoId} className='shadow-md bg-zinc-800 hover:bg-zinc-700 mb-px border-zinc-700 last:mb-0 px-4 py-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 focus-visible:z-10 last:rounded-b-lg first:rounded-t-lg'
             onClick={() => onClick(i)}
           >
             <div className='flex items-center space-x-3'>
@@ -112,13 +112,13 @@ function PauseButton({addPlayingListener, onClick}) {
     addPlayingListener((playing) => setPlaying(playing));
   }, [playing, setPlaying])
   return (
-    <button className='px-4 py-2 border-r border-zinc-700 last:border-0 hover:bg-zinc-700 focus:bg-zinc-700'
+    <button className='px-3 py-3 hover:text-zinc-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
       onClick={async () => {
         setPlaying(!playing);
         await onClick();
       }}
     >
-      {!playing ? <IoPlayOutline className='w-5 h-5'/> : <IoPauseOutline className='w-5 h-5'/>}
+      {!playing ? <IoPlayOutline className='w-7 h-7'/> : <IoPauseOutline className='w-7 h-7'/>}
     </button>
   )
 }
@@ -153,64 +153,66 @@ function PlayerPage({playlist, updateQueue, videos}) {
   />, [queue, playerRef, updatePlayer])
 
   return (
-    <div className="w-full max-w-md space-y-8 mb-8">
+    <div className="w-full max-w-lg space-y-8 mb-8">
       <div>
         <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-zinc-50">
           Playlist player
         </h2>
         <p className="mt-2 text-center text-sm text-zinc-400">
-          Selected playlist: {playlist.title} - {playlist.queue.length} videos
+          {playlist.title} · {playlist.queue.length} videos
         </p>
       </div>
-      <div>
-        <div id='videoContainer' className='w-full aspect-video rounded-lg shadow-lg overflow-hidden group'>
-          {youtubePlayer}
+      <div className='flex flex-col gap-3'>
+        <div>
+          <div id='videoContainer' className='w-full aspect-video rounded-lg shadow-lg overflow-hidden group'>
+            {youtubePlayer}
+          </div>
         </div>
-      </div>
-      <div className='flex bg-zinc-800 border border-zinc-700 overflow-hidden rounded-lg'>
-        <button className='invisible px-4 py-2 border-l border-zinc-700 hover:bg-zinc-700 focus:bg-zinc-700'><IoShuffleOutline className='w-5 h-5'/></button>
-        <div className='flex-1'></div>
-        <button className='px-4 py-2 border-x border-zinc-700 hover:bg-zinc-700 focus:bg-zinc-700'
-          onClick={async () => {
-            queue.current.unshift(queue.current.pop());
-            await updatePlayer();
-          }}
-        >
-          <IoPlaySkipBackOutline className='w-5 h-5'/>
-        </button>
-        <PauseButton addPlayingListener={(callback) => playingCallback.current = callback}
-          onClick={async () => {
-            if (playingRef.current) await playerRef.current.internalPlayer.pauseVideo();
-            else await playerRef.current.internalPlayer.playVideo();
-            playingRef.current = !playingRef.current;
-          }}
-        />
-        <button className='px-4 py-2 border-r border-zinc-700 last:border-0 hover:bg-zinc-700 focus:bg-zinc-700'
-          onClick={async () => {
-            queue.current.push(queue.current.shift());
-            await updatePlayer();
-          }}
-        >
-          <IoPlaySkipForwardOutline className='w-5 h-5'/>
-        </button>
-        <div className='flex-1'></div>
-        <button className='px-4 py-2 border-l border-zinc-700 hover:bg-zinc-700 focus:bg-zinc-700'
-          onClick={async () => {
-            shuffleQueue(queue.current);
-            await updatePlayer();
-          }}
-        >
-          <IoShuffleOutline className='w-5 h-5'/>
-        </button>
-      </div>
-      <div>
-        <PlaylistQueue videos={videos} initialQueue={queue.current}
-          setQueueUpdateCallback={(callback) => queueUpdateCallback.current = callback}
-          onClick={async (i) => {
-            while (i--) queue.current.push(queue.current.shift());
-            await updatePlayer();
-          }}
-        />
+        <div className='flex bg-zinc-800 text-zinc-300 rounded-lg shadow-sm px-2'>
+          <button className='invisible px-4 py-2'><IoShuffleOutline className='w-5 h-5'/></button>
+          <div className='flex-1'></div>
+          <button className='px-3 py-3 hover:text-zinc-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
+            onClick={async () => {
+              queue.current.unshift(queue.current.pop());
+              await updatePlayer();
+            }}
+          >
+            <IoPlaySkipBackOutline className='w-5 h-5'/>
+          </button>
+          <PauseButton addPlayingListener={(callback) => playingCallback.current = callback}
+            onClick={async () => {
+              if (playingRef.current) await playerRef.current.internalPlayer.pauseVideo();
+              else await playerRef.current.internalPlayer.playVideo();
+              playingRef.current = !playingRef.current;
+            }}
+          />
+          <button className='px-3 py-3 hover:text-zinc-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
+            onClick={async () => {
+              queue.current.push(queue.current.shift());
+              await updatePlayer();
+            }}
+          >
+            <IoPlaySkipForwardOutline className='w-5 h-5'/>
+          </button>
+          <div className='flex-1'></div>
+          <button className='px-3 py-3 hover:text-zinc-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
+            onClick={async () => {
+              shuffleQueue(queue.current);
+              await updatePlayer();
+            }}
+          >
+            <IoShuffleOutline className='w-5 h-5'/>
+          </button>
+        </div>
+        <div>
+          <PlaylistQueue videos={videos} initialQueue={queue.current}
+            setQueueUpdateCallback={(callback) => queueUpdateCallback.current = callback}
+            onClick={async (i) => {
+              while (i--) queue.current.push(queue.current.shift());
+              await updatePlayer();
+            }}
+          />
+        </div>
       </div>
     </div>
   )
@@ -227,6 +229,41 @@ function PlayerSwitcher({playlists, syncPlaylists, updatePlaylists}) {
         // Maybe show loading bar here
         setPlaylist(playlist);
       }} playlists={playlists} syncPlaylists={syncPlaylists}/>
+    ) : (
+      <PlayerPage playlist={playlist} videos={videos} updateQueue={(queue) => {
+        playlist.queue = queue;
+        const newPlaylists = {};
+        newPlaylists[getPlaylistId(playlist.url)] = playlist;
+        updatePlaylists(newPlaylists);
+      }}/>
+    )
+  )
+}
+
+function PlaylistLoadingPage({playlists, updatePlaylists}) {
+  const [playlist, setPlaylist] = useState(null);
+  const [videos, setVideos] = useState();
+  const loading = useRef(false);
+  useEffect(() => {
+    async function loadPlaylist() {
+      loading.current = true;
+      const playlistId = getPlaylistId(location.href);
+      // fetch('https://kamiak-io.fly.dev/yuu/update?playlist_id='+playlistId, {method: 'POST'});
+      let prom = updatePlaylistInfo(playlists, updatePlaylists, playlistId);
+      let resp = await fetch('https://kamiak-io.fly.dev/yuu/get_playlist_videos?playlist_id='+playlistId);
+      setVideos(await resp.json());
+      await prom;
+      setPlaylist(playlists[playlistId]);
+      console.log('loaded', playlist);
+      loading.current = false;
+    }
+    if (!playlist && !loading.current) loadPlaylist();
+    console.log('rerender');
+  }, [playlist, videos]);
+
+  return (
+    !playlist || !playlist.queue ? (
+      <div>Loading...</div>
     ) : (
       <PlayerPage playlist={playlist} videos={videos} updateQueue={(queue) => {
         playlist.queue = queue;
@@ -259,7 +296,7 @@ function ImportPage({playlists, updatePlaylists}) {
           </div>
         </div>
         <div>
-          <button className="group relative flex w-full justify-center rounded-md bg-red-700 py-2 px-3 text-sm font-medium text-red-50 hover:bg-red-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 shadow-sm ring-1 ring-red-600 hover:ring-red-500 ring-inset"
+          <button className="group relative flex w-full justify-center rounded-md bg-red-700 py-2 px-3 text-sm font-medium text-red-50 hover:bg-red-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 shadow-sm"
             onClick={async () => {
               let playlistId = getPlaylistId(playlistUrl);
               fetch('https://kamiak-io.fly.dev/yuu/import?playlist_id='+playlistId, {method: 'POST'});
@@ -268,7 +305,7 @@ function ImportPage({playlists, updatePlaylists}) {
           >
             Import entire playlist
           </button>
-          <button className="mt-2 group relative flex w-full justify-center rounded-md bg-zinc-800 py-2 px-3 text-sm font-medium text-zinc-300 hover:bg-zinc-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 shadow-sm ring-1 ring-zinc-700 hover:ring-zinc-600 ring-inset"
+          <button className="mt-2 group relative flex w-full justify-center rounded-md bg-zinc-800 py-2 px-3 text-sm font-medium text-zinc-300 hover:bg-zinc-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 shadow-sm"
             onClick={async () => {
               let playlistId = getPlaylistId(playlistUrl);
               fetch('https://kamiak-io.fly.dev/yuu/update?playlist_id='+playlistId, {method: 'POST'});
@@ -328,16 +365,17 @@ function App() {
     <div className="flex flex-col min-h-full items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-zinc-900 selection:bg-red-600/80 selection:text-white">
       <Routes>
         <Route path='/' element={<PlayerSwitcher playlists={playlists.current} updatePlaylists={savePlaylists} syncPlaylists={syncPlaylists}/>}></Route>
+        <Route path='/play' element={<PlaylistLoadingPage playlists={playlists.current} updatePlaylists={updatePlaylists}/>}></Route>
         <Route path='/import' element={<ImportPage playlists={playlists.current} updatePlaylists={updatePlaylists}/>}></Route>
       </Routes>
-      <footer className='fixed bottom-2 p-4 text-sm text-zinc-400 rounded-lg backdrop-blur-lg bg-zinc-900/80 flex'>
-        <div className='pr-3 border-r border-zinc-700 font-semibold'>
-          <Link to='/'>Player</Link>
+      <footer className='fixed bottom-2 p-4 text-sm text-zinc-400 rounded-lg backdrop-blur-lg bg-zinc-900/80 flex z-50'>
+        <div className='pr-3 border-r border-zinc-700 font-semibold focus-visible:text-zinc-200'>
+          <Link to='/' className='focus-visible:text-zinc-300'>Player</Link>
         </div>
         <div className='px-3 border-r border-zinc-700 font-semibold'>
-          <Link to='/import'>Import</Link>
+          <Link to='/import' className='focus-visible:text-zinc-300'>Import</Link>
         </div>
-        <a href="https://github.com/jwseph/youtube-player" target='_blank' className='font-semibold ml-3'>Github</a>
+        <a href="https://github.com/jwseph/youtube-player" target='_blank' className='font-semibold ml-3 focus-visible:text-zinc-300'>Github</a>
       </footer>
     </div>
   )
