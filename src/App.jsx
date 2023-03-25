@@ -368,7 +368,7 @@ function App() {
         <Route path='/play' element={<PlaylistLoadingPage playlists={playlists.current} updatePlaylists={updatePlaylists}/>}></Route>
         <Route path='/import' element={<ImportPage playlists={playlists.current} updatePlaylists={updatePlaylists}/>}></Route>
       </Routes>
-      <footer className='fixed bottom-2 p-4 text-sm text-zinc-400 rounded-lg backdrop-blur-lg bg-zinc-900/80 flex z-50'>
+      <footer className='fixed bottom-0 px-6 py-5 text-sm text-zinc-400 backdrop-blur-lg bg-zinc-900/80 flex z-50 border-1 border-zinc-900 border-b-0 w-full justify-center'>
         <div className='pr-3 border-r border-zinc-700 font-semibold focus-visible:text-zinc-200'>
           <Link to='/' className='focus-visible:text-zinc-300'>Player</Link>
         </div>
