@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import './App.css'
-import { Route, Link, Routes, useNavigate } from 'react-router-dom';
-import { LazyLoadImage } from 'react-lazy-load-image-component';
-import YouTube from 'react-youtube';
-import { IoShuffleOutline, IoPlaySkipBackOutline, IoPlaySkipForwardOutline, IoPauseOutline, IoPlayOutline } from 'react-icons/io5';
+import { Route, Link, Routes, useNavigate } from 'react-router-dom'
+import { LazyLoadImage } from 'react-lazy-load-image-component'
+import YouTube from 'react-youtube'
+import { IoShuffleOutline, IoPlaySkipBackOutline, IoPlaySkipForwardOutline, IoPauseOutline, IoPlayOutline } from 'react-icons/io5'
+import LoadingBar from 'react-top-loading-bar'
 
 const getPlaylistId = (url) => {
   return new URL(url).searchParams.get('list');
@@ -38,7 +39,7 @@ function SelectPlaylistPage({playlists, syncPlaylists, setPlaylist}) {
     <div className="w-full max-w-lg space-y-8 mb-8">
       <div>
         <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-zinc-50">
-          Playlist player
+          Select a playlist
         </h2>
         <p className="mt-2 text-center text-sm text-zinc-400">
           Select a saved playlist to play
@@ -49,7 +50,10 @@ function SelectPlaylistPage({playlists, syncPlaylists, setPlaylist}) {
           let playlist = playlists[playlistId];
           return (
             <button key={playlistId} className={'items-center w-full bg-zinc-800 px-6 py-4 flex gap-5 rounded-lg shadow-sm' + (!playlist || !playlist.queue ? '' : ' cursor-pointer hover:bg-zinc-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600')} tabIndex={!playlist || !playlist.queue ? '-1' : '0'}
-              onClick={() => setPlaylist(playlist)}
+              onClick={() => {
+                setPlaylist(playlist)
+                history.replaceState(null, 'Youtube Player', '/play?list='+playlistId);
+              }}
             >
               <a tabIndex='-1' href={playlist.url} target='_blank' onClick={e => e.stopPropagation()}>
                 <img src={playlist.thumbnails.small} className='aspect-square object-cover h-28 rounded-md shadow-sm'/>
@@ -129,8 +133,15 @@ function PlayerPage({playlist, updateQueue, videos}) {
   const playingRef = useRef(true);
   const playingCallback = useRef();
   const queueUpdateCallback = useRef();
+  useEffect(() => {
+    setTitle();
+  }, [playlist]);
+  function setTitle() {
+    document.title = `Yuu · ${playlist.title} · ${videos[queue.current[0]].title}`;
+  }
   async function updatePlayer() {
     playerRef.current.internalPlayer.loadVideoById(queue.current[0]);
+    setTitle();
     updateQueue(queue.current);
     queueUpdateCallback.current(queue.current);
   }
@@ -221,8 +232,12 @@ function PlayerPage({playlist, updateQueue, videos}) {
 function PlayerSwitcher({playlists, syncPlaylists, updatePlaylists}) {
   const [playlist, setPlaylist] = useState(null);
   const [videos, setVideos] = useState();
+  useEffect(() => {
+    setTab(0);
+    document.title = 'Yuu · Select a playlist';
+  }, [])
   return (
-    !playlist || !playlist.queue ? (
+    !playlist?.queue ? (
       <SelectPlaylistPage setPlaylist={async (playlist) => {
         let resp = await fetch('https://kamiak-io.fly.dev/yuu/get_playlist_videos?playlist_id='+getPlaylistId(playlist.url));
         setVideos(await resp.json());
@@ -240,43 +255,61 @@ function PlayerSwitcher({playlists, syncPlaylists, updatePlaylists}) {
   )
 }
 
-function PlaylistLoadingPage({playlists, updatePlaylists}) {
-  const [playlist, setPlaylist] = useState(null);
+function PlaylistLoadingPage({playlists, updatePlaylists, syncPlaylists}) {
+  const [playlist, setPlaylist] = useState({});
   const [videos, setVideos] = useState();
   const loading = useRef(false);
+  const [progress, setProgress] = useState(0);
   useEffect(() => {
+    setTab(0);
     async function loadPlaylist() {
-      loading.current = true;
+      setProgress(20);
       const playlistId = getPlaylistId(location.href);
-      // fetch('https://kamiak-io.fly.dev/yuu/update?playlist_id='+playlistId, {method: 'POST'});
-      let prom = updatePlaylistInfo(playlists, updatePlaylists, playlistId);
-      let resp = await fetch('https://kamiak-io.fly.dev/yuu/get_playlist_videos?playlist_id='+playlistId);
-      setVideos(await resp.json());
+
+      let prom = (async () => {
+        await updatePlaylistInfo(playlists, updatePlaylists, playlistId);
+        await syncPlaylists();
+      })();
+
+      setVideos(await (await fetch('https://kamiak-io.fly.dev/yuu/get_playlist_videos?playlist_id='+playlistId)).json());
+      setProgress(60);
       await prom;
+
       setPlaylist(playlists[playlistId]);
-      console.log('loaded', playlist);
+      console.log('loaded', playlistId);
       loading.current = false;
+      setProgress(100);
     }
-    if (!playlist && !loading.current) loadPlaylist();
+    if (!playlist?.queue && !loading.current) {
+      loading.current = true;
+      loadPlaylist();
+    }
     console.log('rerender');
   }, [playlist, videos]);
 
   return (
-    !playlist || !playlist.queue ? (
-      <div>Loading...</div>
-    ) : (
-      <PlayerPage playlist={playlist} videos={videos} updateQueue={(queue) => {
-        playlist.queue = queue;
-        const newPlaylists = {};
-        newPlaylists[getPlaylistId(playlist.url)] = playlist;
-        updatePlaylists(newPlaylists);
-      }}/>
-    )
+    <div className='w-full flex justify-center'>
+      <LoadingBar color='#ff0000' progress={progress}/>
+      {!playlist?.queue ? (
+        <div></div>
+      ) : (
+        <PlayerPage playlist={playlist} videos={videos} updateQueue={(queue) => {
+          playlist.queue = queue;
+          const newPlaylists = {};
+          newPlaylists[getPlaylistId(playlist.url)] = playlist;
+          updatePlaylists(newPlaylists);
+        }}/>
+      )}
+    </div>
   )
 }
 
 function ImportPage({playlists, updatePlaylists}) {
   const [playlistUrl, setPlaylistUrl] = useState()
+  useEffect(() => {
+    setTab(1);
+    document.title = 'Yuu · Import a playlist';
+  }, [])
   return (
     <div className="w-full max-w-md space-y-8 mb-8">
       <div>
@@ -292,7 +325,7 @@ function ImportPage({playlists, updatePlaylists}) {
         <div className="-space-y-1 rounded-md shadow-lg">
           <div>
             <label htmlFor="playlistUrl" className="sr-only">Enter a playlist url</label>
-            <input onChange={e => setPlaylistUrl(e.target.value.trim())} id="playlistUrl" name="playlistUrl" type="text" autoComplete="off" className="relative block w-full rounded-md border-0 py-1.5 text-zinc-100 ring-1 ring-inset ring-zinc-700 placeholder:text-zinc-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-red-600 sm:text-sm sm:leading-6 px-3 bg-zinc-900" placeholder='Enter a playlist url'/>
+            <input onChange={e => setPlaylistUrl(e.target.value.trim())} id="playlistUrl" name="playlistUrl" type="text" autoComplete="off" className="relative block w-full rounded-md border-0 py-1.5 text-zinc-100 ring-1 ring-inset ring-zinc-700 placeholder:text-zinc-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-red-600 text-sm leading-6 px-3 bg-zinc-900" placeholder='Enter a playlist url'/>
           </div>
         </div>
         <div>
@@ -323,6 +356,9 @@ function ImportPage({playlists, updatePlaylists}) {
 function App() {
   const [count, setCount] = useState(0)
   const playlists = useRef(JSON.parse(localStorage.playlists || '{}'));
+  const [tab, setTab] = useState(0);
+  const [playerCount, setPlayerCount] = useState(0);
+  window.setTab = setTab;
 
   function savePlaylists(newPlaylists) {
     playlists.current = {...playlists.current, ...newPlaylists};
@@ -364,18 +400,18 @@ function App() {
   return (
     <div className="flex flex-col min-h-full items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-zinc-900 selection:bg-red-600/80 selection:text-white">
       <Routes>
-        <Route path='/' element={<PlayerSwitcher playlists={playlists.current} updatePlaylists={savePlaylists} syncPlaylists={syncPlaylists}/>}></Route>
-        <Route path='/play' element={<PlaylistLoadingPage playlists={playlists.current} updatePlaylists={updatePlaylists}/>}></Route>
+        <Route path='/' element={<PlayerSwitcher key={'player'+playerCount} playlists={playlists.current} updatePlaylists={savePlaylists} syncPlaylists={syncPlaylists}/>}></Route>
+        <Route path='/play' element={<PlaylistLoadingPage playlists={playlists.current} updatePlaylists={updatePlaylists} syncPlaylists={syncPlaylists}/>}></Route>
         <Route path='/import' element={<ImportPage playlists={playlists.current} updatePlaylists={updatePlaylists}/>}></Route>
       </Routes>
       <footer className='fixed bottom-0 px-6 py-5 text-sm text-zinc-400 backdrop-blur-lg bg-zinc-900/80 flex z-50 border-1 border-zinc-900 border-b-0 w-full justify-center'>
         <div className='pr-3 border-r border-zinc-700 font-semibold focus-visible:text-zinc-200'>
-          <Link to='/' className='focus-visible:text-zinc-300'>Player</Link>
+          <Link to='/' className={'rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600' + (tab == 0 ? ' text-zinc-300' : '')} onClick={() => setPlayerCount(playerCount+1)}>Player</Link>
         </div>
         <div className='px-3 border-r border-zinc-700 font-semibold'>
-          <Link to='/import' className='focus-visible:text-zinc-300'>Import</Link>
+          <Link to='/import' className={'rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600' + (tab == 1 ? ' text-zinc-300' : '')}>Import</Link>
         </div>
-        <a href="https://github.com/jwseph/youtube-player" target='_blank' className='font-semibold ml-3 focus-visible:text-zinc-300'>Github</a>
+        <a href="https://github.com/jwseph/youtube-player" target='_blank' className='rounded-sm font-semibold ml-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600'>Github</a>
       </footer>
     </div>
   )
