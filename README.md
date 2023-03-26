@@ -3,7 +3,7 @@ A YouTube playlist player made with React and Tailwind
 
 ## Important features
 - True shuffle
-  - YouTube and YouTube Music don't shuffle videos properly: they only shuffle in a range of ±200 from the current video
+  - YouTube and YouTube Music only shuffle playlists in a range of ±200 from the current video
 - No ads
 - Autoplay
   - Auto-skips unavailable videos but doesn't hide them
