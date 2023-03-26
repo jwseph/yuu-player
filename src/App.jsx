@@ -177,7 +177,7 @@ function PlayerPage({playlist, updateQueue, videos}) {
     queue.current = newQueue;
     updatePlayer();
   }
-  const playCurr = () => seekTo(0);
+  const playCurr = () => playerRef.current.internalPlayer.playVideo();
   const playNext = () => seekTo(1);
   const playPrev = () => seekTo(queue.current.length-1);
   const youtubePlayer = useMemo(() => 
