@@ -409,7 +409,7 @@ function App() {
     <div className="flex flex-col min-h-full items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-zinc-900 selection:bg-red-600/80 selection:text-white">
       <Routes>
         <Route path='/' element={<PlayerSwitcher key={'player'+playerCount} playlists={playlists.current} updatePlaylists={savePlaylists} syncPlaylists={syncPlaylists}/>}></Route>
-        <Route path='/play' element={<PlaylistLoadingPage playlists={playlists.current} updatePlaylists={updatePlaylists} syncPlaylists={syncPlaylists}/>}></Route>
+        <Route path='/play' element={<PlaylistLoadingPage playlists={playlists.current} updatePlaylists={savePlaylists} syncPlaylists={syncPlaylists}/>}></Route>
         <Route path='/import' element={<ImportPage playlists={playlists.current} updatePlaylists={updatePlaylists}/>}></Route>
       </Routes>
       <footer className='fixed bottom-0 px-6 py-5 text-sm text-zinc-400 backdrop-blur-lg bg-zinc-900/80 flex z-50 border-1 border-zinc-900 border-b-0 w-full justify-center'>
