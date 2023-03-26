@@ -3,17 +3,14 @@ A YouTube playlist player made with React and Tailwind
 
 ## Important features
 - True shuffle
-  - YouTube and YouTube Music don't shuffle videos properly: you end up with a video in a range of ±200
+  - YouTube and YouTube Music don't shuffle videos properly: they only shuffle in a range of ±200 from the current video
 - No ads
 - Autoplay
-- Saved playlist queues
+  - Auto-skips unavailable videos but doesn't hide them
+- Saves playlist queues
+- Plays audio when phone's screen is off (requires Firefox + desktop mode (unsure if this works on iOS))
 
 ## Future features (Todo)
-- Improve speed when the playlist has thousands of items
-- Play audio even when phone is off (might not work for all devices)
-- Better GUI (only a prototype rn)
-
-## Current issues
-- Occasionally, video names in the queue don't correspond to their real video ID
-  - Might be due to hidden videos
-  - Requires backend fix
+- Make usage more intuitive and streamlined for new users
+  - Combine "import" and "update" options
+- Improve queue-rendering speed (only shows top 70 as of now to avoid lag)
