@@ -13,4 +13,4 @@ A YouTube playlist player made with React and Tailwind
 ## Future features (Todo)
 - Make usage more intuitive and streamlined for new users
   - Combine "import" and "update" options
-- Improve queue-rendering speed (only shows top 70 as of now to avoid lag)
+- Improve queue-rendering speed (currently only shows top 70 videos to avoid lag)
