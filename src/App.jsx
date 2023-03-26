@@ -138,7 +138,7 @@ function PauseButton({addPlayingListener, onClick}) {
 function PlayerPage({playlist, updateQueue, videos}) {
   const queue = useRef(playlist.queue);
   const playerRef = useRef(null);
-  const playingRef = useRef(true);
+  const playingRef = useRef(false);
   const playingCallback = useRef();
   const queueUpdateCallback = useRef();
   useEffect(() => {
