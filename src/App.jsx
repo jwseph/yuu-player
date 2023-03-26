@@ -55,7 +55,7 @@ function SelectPlaylistPage({playlists, syncPlaylists, setPlaylist}) {
           {Object.keys(playlists).map(playlistId => {
             let playlist = playlists[playlistId];
             return (
-              <button key={playlistId} className={'cursor-default items-center w-full bg-zinc-800 px-6 py-4 flex gap-5 rounded-lg shadow-sm' + (!playlist?.queue ? '' : ' cursor-pointer hover:bg-zinc-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 opacity-50')} tabIndex={!playlist || !playlist.queue ? '-1' : '0'}
+              <button key={playlistId} className={'cursor-default items-center w-full bg-zinc-800 px-6 py-4 flex gap-5 rounded-lg shadow-sm opacity-50' + (!playlist?.queue ? '' : ' cursor-pointer hover:bg-zinc-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 opacity-100')} tabIndex={!playlist || !playlist.queue ? '-1' : '0'}
                 onClick={() => {
                   if (!playlist.queue) return;
                   setPlaylist(playlist)
