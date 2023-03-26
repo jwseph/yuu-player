@@ -3,7 +3,7 @@ import './App.css'
 import { Route, Link, Routes, useNavigate } from 'react-router-dom'
 import { LazyLoadImage } from 'react-lazy-load-image-component'
 import YouTube from 'react-youtube'
-import { IoShuffleOutline, IoPlaySkipBackOutline, IoPlaySkipForwardOutline, IoPauseOutline, IoPlayOutline } from 'react-icons/io5'
+import { MdSkipNext, MdSkipPrevious, MdShuffle, MdPlayArrow, MdPause, MdRepeatOne, MdRepeatOneOn } from 'react-icons/md';
 import LoadingBar from 'react-top-loading-bar'
 
 const getPlaylistId = (url) => {
@@ -119,7 +119,7 @@ function PlaylistQueue({initialQueue, videos, onClick, setQueueUpdateCallback}) 
 }
 
 function PauseButton({addPlayingListener, onClick}) {
-  const [playing, setPlaying] = useState(true)
+  const [playing, setPlaying] = useState(false)
   useEffect(() => {
     addPlayingListener((playing) => setPlaying(playing));
   }, [playing, setPlaying])
@@ -130,7 +130,21 @@ function PauseButton({addPlayingListener, onClick}) {
         await onClick();
       }}
     >
-      {!playing ? <IoPlayOutline className='w-7 h-7'/> : <IoPauseOutline className='w-7 h-7'/>}
+      {!playing ? <MdPlayArrow className='w-8 h-8'/> : <MdPause className='w-8 h-8'/>}
+    </button>
+  )
+}
+
+function LoopOneButton({onClick}) {
+  const [loop, setLoop] = useState(false)
+  return (
+    <button className='px-3 py-3 hover:text-zinc-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
+      onClick={() => {
+        onClick(!loop);
+        setLoop(!loop);
+      }}
+    >
+      {!loop ? <MdRepeatOne className='w-7 h-7'/> : <MdRepeatOneOn className='w-7 h-7'/>}
     </button>
   )
 }
@@ -141,18 +155,31 @@ function PlayerPage({playlist, updateQueue, videos}) {
   const playingRef = useRef(false);
   const playingCallback = useRef();
   const queueUpdateCallback = useRef();
+  const previousStates = useRef([-2, -2, -2]);
+  const loop = useRef(false);
   useEffect(() => {
     setTitle();
   }, [playlist]);
   function setTitle() {
     document.title = `${playlist.title} · ${videos[queue.current[0]].title} · Yuu`;
   }
-  async function updatePlayer() {
+  function updatePlayer() {
     playerRef.current.internalPlayer.loadVideoById(queue.current[0]);
     setTitle();
     updateQueue(queue.current);
     queueUpdateCallback.current(queue.current);
   }
+  function seekTo(i) {
+    const newQueue = [];
+    for (let j = 0; j < queue.current.length; j++) {
+      newQueue.push(queue.current[(i+j)%queue.current.length]);
+    }
+    queue.current = newQueue;
+    updatePlayer();
+  }
+  const playCurr = () => seekTo(0);
+  const playNext = () => seekTo(1);
+  const playPrev = () => seekTo(queue.current.length-1);
   const youtubePlayer = useMemo(() => 
   <YouTube videoId={queue.current[0]}
     opts={{
@@ -160,14 +187,17 @@ function PlayerPage({playlist, updateQueue, videos}) {
       playerVars: {autoplay: 1, origin: location.origin},
     }}
     ref={playerRef}
-    onEnd={async () => {
-      queue.current.push(queue.current.shift());
-      await updatePlayer();
-    }}
+    onEnd={() => loop.current ? playCurr() : playNext()}
     onStateChange={async (state) => {
       if (state.data == 1) playingRef.current = true;
       if (state.data == 2) playingRef.current = false;
+      if (state.data == -1 && previousStates.current == '0,-1,3') {
+        playNext();
+        previousStates.current[2] = 0;
+      }
       if (playingCallback.current) playingCallback.current(playingRef.current);
+      previousStates.current.shift();
+      previousStates.current.push(state.data);
     }}
   />, [queue, playerRef, updatePlayer])
 
@@ -188,15 +218,12 @@ function PlayerPage({playlist, updateQueue, videos}) {
           </div>
         </div>
         <div className='flex bg-zinc-800 text-zinc-300 rounded-lg shadow-sm px-2'>
-          <button className='invisible px-4 py-2'><IoShuffleOutline className='w-5 h-5'/></button>
+          <LoopOneButton onClick={(newLoop) => loop.current = newLoop}/>
           <div className='flex-1'></div>
-          <button className='px-3 py-3 hover:text-zinc-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
-            onClick={async () => {
-              queue.current.unshift(queue.current.pop());
-              await updatePlayer();
-            }}
+          <button className='px-2 py-3 hover:text-zinc-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
+            onClick={playPrev}
           >
-            <IoPlaySkipBackOutline className='w-5 h-5'/>
+            <MdSkipPrevious className='w-7 h-7'/>
           </button>
           <PauseButton addPlayingListener={(callback) => playingCallback.current = callback}
             onClick={async () => {
@@ -205,31 +232,25 @@ function PlayerPage({playlist, updateQueue, videos}) {
               playingRef.current = !playingRef.current;
             }}
           />
-          <button className='px-3 py-3 hover:text-zinc-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
-            onClick={async () => {
-              queue.current.push(queue.current.shift());
-              await updatePlayer();
-            }}
+          <button className='px-2 py-3 hover:text-zinc-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
+            onClick={playNext}
           >
-            <IoPlaySkipForwardOutline className='w-5 h-5'/>
+            <MdSkipNext className='w-7 h-7'/>
           </button>
           <div className='flex-1'></div>
           <button className='px-3 py-3 hover:text-zinc-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
             onClick={async () => {
               shuffleQueue(queue.current);
-              await updatePlayer();
+              updatePlayer();
             }}
           >
-            <IoShuffleOutline className='w-5 h-5'/>
+            <MdShuffle className='w-7 h-7'/>
           </button>
         </div>
         <div>
           <PlaylistQueue videos={videos} initialQueue={queue.current}
             setQueueUpdateCallback={(callback) => queueUpdateCallback.current = callback}
-            onClick={async (i) => {
-              while (i--) queue.current.push(queue.current.shift());
-              await updatePlayer();
-            }}
+            onClick={seekTo}
           />
         </div>
       </div>
