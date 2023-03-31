@@ -8,7 +8,9 @@ A YouTube playlist player made with React and Tailwind
 - Autoplay
   - Auto-skips unavailable videos but doesn't hide them
 - Saves playlist queues
-- Plays audio when phone's screen is off (requires Firefox + desktop mode (unsure if this works on iOS))
+- Plays audio when phone's screen is off
+  - Chrome on iOS
+  - Firefox + desktop mode on Android
 
 ## Future features (Todo)
 - Make usage more intuitive and streamlined for new users
