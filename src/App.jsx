@@ -60,12 +60,9 @@ function SelectPlaylistPage({playlists, syncPlaylists, setPlaylist}) {
                   history.replaceState(null, 'Youtube Player', '/play?list='+playlistId);
                 }}
               >
-                <a tabIndex='-1' href={playlist.url} target='_blank' onClick={e => e.stopPropagation()}>
-                  <div className="aspect-square h-28 relative bg-gradient-to-tr	from-zinc-800 to-zinc-900 rounded-md shadow-sm">
-                    <div className="absolute inset-0 bg-cover bg-center z-0 rounded-md" style={{backgroundImage: 'url('+playlist.thumbnails.small+')'}}></div>
-                    <div className="opacity-0 hover:opacity-100 duration-200 ease-in-out absolute inset-0 z-10 flex justify-center items-center text-zinc-200 font-semibold bg-zinc-900/60 rounded-md backdrop-blur-sm">
-                      <MdOutlineOpenInNew className='w-12 h-12'/>
-                    </div>
+                <a tabIndex='-1' href={playlist.url} target='_blank' onClick={e => e.stopPropagation()} className='focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-red-600 rounded-md'>
+                  <div className="group aspect-square h-28 relative bg-gradient-to-tr	from-zinc-800 to-zinc-900 rounded-md shadow-sm overflow-hidden">
+                    <div className="absolute inset-0 bg-cover bg-center z-0 group-hover:scale-110 duration-200 ease-in-out" style={{backgroundImage: 'url('+playlist.thumbnails.small+')'}}></div>
                   </div>
                 </a>
                 <div className='flex flex-col flex-1 items-start'>
