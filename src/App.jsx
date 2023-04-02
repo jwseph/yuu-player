@@ -3,7 +3,7 @@ import './App.css'
 import { Route, Link, Routes } from 'react-router-dom'
 import { LazyLoadImage } from 'react-lazy-load-image-component'
 import YouTube from 'react-youtube'
-import { MdSkipNext, MdSkipPrevious, MdShuffle, MdPlayArrow, MdPause, MdRepeatOne, MdRepeatOneOn } from 'react-icons/md';
+import { MdSkipNext, MdSkipPrevious, MdShuffle, MdPlayArrow, MdPause, MdRepeatOne, MdRepeatOneOn, MdOutlineOpenInNew } from 'react-icons/md';
 import LoadingBar from 'react-top-loading-bar'
 
 const getPlaylistId = (url) => new URL(url).searchParams.get('list');
@@ -61,7 +61,12 @@ function SelectPlaylistPage({playlists, syncPlaylists, setPlaylist}) {
                 }}
               >
                 <a tabIndex='-1' href={playlist.url} target='_blank' onClick={e => e.stopPropagation()}>
-                  <img src={playlist.thumbnails.small} className='aspect-square object-cover h-28 rounded-md shadow-sm'/>
+                  <div className="aspect-square h-28 relative bg-gradient-to-tr	from-zinc-800 to-zinc-900 rounded-md shadow-sm">
+                    <div className="absolute inset-0 bg-cover bg-center z-0 rounded-md" style={{backgroundImage: 'url('+playlist.thumbnails.small+')'}}></div>
+                    <div className="opacity-0 hover:opacity-100 duration-200 ease-in-out absolute inset-0 z-10 flex justify-center items-center text-zinc-200 font-semibold bg-zinc-900/60 rounded-md backdrop-blur-sm">
+                      <MdOutlineOpenInNew className='w-12 h-12'/>
+                    </div>
+                  </div>
                 </a>
                 <div className='flex flex-col flex-1 items-start'>
                   <h3 className='text-lg text-zinc-50 font-bold text-left leading-tight'>{playlist.title}</h3>
