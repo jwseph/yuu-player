@@ -3,7 +3,7 @@ import './App.css'
 import { Route, Link, Routes } from 'react-router-dom'
 import { LazyLoadImage } from 'react-lazy-load-image-component'
 import YouTube from 'react-youtube'
-import { MdSkipNext, MdSkipPrevious, MdShuffle, MdPlayArrow, MdPause, MdRepeatOne, MdRepeatOneOn, MdOutlineOpenInNew } from 'react-icons/md';
+import { MdSkipNext, MdSkipPrevious, MdShuffle, MdPlayArrow, MdPause, MdRepeatOne, MdRepeatOneOn } from 'react-icons/md';
 import LoadingBar from 'react-top-loading-bar'
 
 const getPlaylistId = (url) => new URL(url).searchParams.get('list');
@@ -295,14 +295,17 @@ function PlaylistLoadingPage({playlists, savePlaylists, syncPlaylists}) {
       setProgress(20);
       const playlistId = getPlaylistId(location.href);
 
-      let prom = (async () => {
-        await updatePlaylistInfo(playlists, savePlaylists, playlistId);
-        await syncPlaylists();
-      })();
+      if (!(playlistId in playlists)) {
+        let prom = (async () => {
+          await updatePlaylistInfo(playlists, savePlaylists, playlistId);
+          await syncPlaylists();
+        })();
+      }
 
       setVideos(await (await fetch('https://kamiak-io.fly.dev/yuu/get_playlist_videos?playlist_id='+playlistId)).json());
       setProgress(60);
-      await prom;
+      
+      if (!(playlistId in playlists)) await prom;
 
       setPlaylist(playlists[playlistId]);
       console.log('loaded', playlistId);
