@@ -294,9 +294,10 @@ function PlaylistLoadingPage({playlists, savePlaylists, syncPlaylists}) {
     async function loadPlaylist() {
       setProgress(20);
       const playlistId = getPlaylistId(location.href);
+      let prom;
 
       if (!(playlistId in playlists)) {
-        let prom = (async () => {
+        prom = (async () => {
           await updatePlaylistInfo(playlists, savePlaylists, playlistId);
           await syncPlaylists();
         })();
