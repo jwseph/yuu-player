@@ -46,7 +46,7 @@ function SelectPlaylistPage({playlists, syncPlaylists, setPlaylist}) {
       {!Object.keys(playlists).length ? (
         <div className='text-center text-md text-zinc-500 flex flex-wrap justify-center gap-1'>
           <div>You don't have any saved playlists.</div>
-          <Link to='/import' className='text-zinc-300 underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'>Import a playlist</Link>
+          <Link to='/import' className='text-zinc-200 hover:text-zinc-50 font-medium underline underline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'>Import a playlist</Link>
         </div>
       ) : (
         <div className='flex flex-col gap-2'>
@@ -213,7 +213,7 @@ function PlayerPage({playlist, updateQueue, videos}) {
       </div>
       <div className='flex flex-col gap-3'>
         <div>
-          <div id='videoContainer' className='w-full aspect-video rounded-lg shadow-xl overflow-hidden group'>
+          <div id='videoContainer' className='w-full aspect-video rounded-lg shadow-lg overflow-hidden group'>
             {youtubePlayer}
           </div>
         </div>
