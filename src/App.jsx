@@ -36,24 +36,24 @@ function SelectPlaylistPage({playlists, syncPlaylists, setPlaylist}) {
   return (
     <div className="w-full max-w-lg space-y-8 mb-8">
       <div>
-        <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-zinc-50">
+        <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-zinc-200">
           Select a playlist
         </h2>
-        <p className="mt-2 text-center text-sm text-zinc-400">
+        <p className="mt-2 text-center text-sm text-zinc-500">
           Select a saved playlist to play
         </p>
       </div>
       {!Object.keys(playlists).length ? (
-        <div className='text-center text-md text-zinc-400 flex flex-wrap justify-center gap-1'>
+        <div className='text-center text-md text-zinc-500 flex flex-wrap justify-center gap-1'>
           <div>You don't have any saved playlists.</div>
-          <Link to='/import' className='text-zinc-200 underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'>Import a playlist</Link>
+          <Link to='/import' className='text-zinc-300 underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'>Import a playlist</Link>
         </div>
       ) : (
         <div className='flex flex-col gap-2'>
           {Object.keys(playlists).map(playlistId => {
             let playlist = playlists[playlistId];
             return (
-              <button key={playlistId} className={'items-center w-full bg-zinc-800 px-6 py-4 flex gap-5 rounded-lg shadow-sm opacity-50' + (!playlist?.queue ? ' cursor-default' : ' cursor-pointer hover:bg-zinc-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 !opacity-100')} tabIndex={!playlist?.queue ? '-1' : '0'}
+              <button key={playlistId} className={'items-center w-full bg-zinc-900 px-6 py-4 flex gap-5 rounded-lg shadow-sm opacity-50' + (!playlist?.queue ? ' cursor-default' : ' cursor-pointer hover:bg-zinc-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 !opacity-100')} tabIndex={!playlist?.queue ? '-1' : '0'}
                 onClick={() => {
                   if (!playlist.queue) return;
                   setPlaylist(playlist)
@@ -61,22 +61,22 @@ function SelectPlaylistPage({playlists, syncPlaylists, setPlaylist}) {
                 }}
               >
                 <a tabIndex='-1' href={playlist.url} target='_blank' onClick={e => e.stopPropagation()} className='focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-red-600 rounded-md'>
-                  <div className="group aspect-square h-28 relative bg-gradient-to-tr	from-zinc-800 to-zinc-900 rounded-md shadow-sm overflow-hidden">
+                  <div className="group aspect-square h-28 relative bg-gradient-to-tr	from-zinc-900 to-zinc-950 rounded-md shadow-sm overflow-hidden">
                     <div className="absolute inset-0 bg-cover bg-center z-0 group-hover:scale-110 duration-200 ease-in-out" style={{backgroundImage: 'url('+playlist.thumbnails.small+')'}}></div>
                   </div>
                 </a>
                 <div className='flex flex-col flex-1 items-start'>
-                  <h3 className='text-lg text-zinc-50 font-bold text-left leading-tight'>{playlist.title}</h3>
+                  <h3 className='text-lg text-zinc-200 font-bold text-left leading-tight'>{playlist.title}</h3>
                   <div className='flex flex-wrap pt-1'>
-                    <div className='text-sm text-zinc-300 font-medium'>{playlist.channel}</div>
-                    <div className='px-2 text-sm text-zinc-400'>·</div>
+                    <div className='text-sm text-zinc-400 font-medium'>{playlist.channel}</div>
+                    <div className='px-2 text-sm text-zinc-500'>·</div>
                     {!playlist.queue ? (
-                      <div className='text-sm text-zinc-400'>Importing videos...</div>
+                      <div className='text-sm text-zinc-500'>Importing videos...</div>
                     ) : (
-                      <div className='text-sm text-zinc-400'>{Object.keys(playlist.videoIds).length} videos</div>
+                      <div className='text-sm text-zinc-500'>{Object.keys(playlist.videoIds).length} videos</div>
                     )}
                   </div>
-                  <div className='text-sm text-zinc-400 whitespace-pre-line text-left pt-2'>{playlist.description || '[No description]'}</div>
+                  <div className='text-sm text-zinc-500 whitespace-pre-line text-left pt-2'>{playlist.description || '[No description]'}</div>
                 </div>
               </button>
             )
@@ -97,7 +97,7 @@ function PlaylistQueue({initialQueue, videos, onClick, setQueueUpdateCallback}) 
       {queue.slice(0, 70).map((videoId, i) => {
         let video = videos[videoId];
         return (
-          <button key={videoId} className='shadow-md bg-zinc-800 hover:bg-zinc-700 mb-px border-zinc-700 last:mb-0 px-4 py-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 focus-visible:z-10 last:rounded-b-lg first:rounded-t-lg'
+          <button key={videoId} className='shadow-md bg-zinc-900 hover:bg-zinc-800 mb-px border-zinc-800 last:mb-0 px-4 py-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 focus-visible:z-10 last:rounded-b-lg first:rounded-t-lg'
             onClick={() => onClick(i)}
           >
             <div className='flex items-center space-x-3'>
@@ -106,10 +106,10 @@ function PlaylistQueue({initialQueue, videos, onClick, setQueueUpdateCallback}) 
                 src={video.thumbnails.small}
               />
               <div className='inline-flex flex-col flex-1 truncate'>
-                <h1 className='truncate text-xs text-left flex-1 font-semibold'>{video.title}</h1>
-                <h1 className='truncate text-xs text-left text-zinc-400'>{video.channel}</h1>
+                <h1 className='truncate text-xs text-left flex-1 font-semibold text-zinc-300'>{video.title}</h1>
+                <h1 className='truncate text-xs text-left text-zinc-500'>{video.channel}</h1>
               </div>
-              <div className='pl-2 text-xs text-zinc-600 text-left'>{i || '#'}</div>
+              <div className='pl-2 text-xs text-zinc-700 text-left'>{i || '#'}</div>
             </div>
           </button>
         )
@@ -124,7 +124,7 @@ function PauseButton({addPlayingListener, onClick}) {
     addPlayingListener((playing) => setPlaying(playing));
   }, [playing, setPlaying])
   return (
-    <button className='px-3 py-3 hover:text-zinc-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
+    <button className='px-3 py-3 hover:text-zinc-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
       onClick={async () => {
         setPlaying(!playing);
         await onClick();
@@ -138,7 +138,7 @@ function PauseButton({addPlayingListener, onClick}) {
 function LoopOneButton({onClick}) {
   const [loop, setLoop] = useState(false)
   return (
-    <button className='px-3 py-3 hover:text-zinc-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
+    <button className='px-3 py-3 hover:text-zinc-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
       onClick={() => {
         onClick(!loop);
         setLoop(!loop);
@@ -204,23 +204,23 @@ function PlayerPage({playlist, updateQueue, videos}) {
   return (
     <div className="w-full max-w-lg space-y-8 mb-8">
       <div>
-        <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-zinc-50">
+        <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-zinc-200">
           {playlist.title}
         </h2>
-        <p className="mt-2 text-center text-sm text-zinc-400">
+        <p className="mt-2 text-center text-sm text-zinc-500">
           {playlist.queue.length} videos
         </p>
       </div>
       <div className='flex flex-col gap-3'>
         <div>
-          <div id='videoContainer' className='w-full aspect-video rounded-lg shadow-lg overflow-hidden group'>
+          <div id='videoContainer' className='w-full aspect-video rounded-lg shadow-xl overflow-hidden group'>
             {youtubePlayer}
           </div>
         </div>
-        <div className='flex bg-zinc-800 text-zinc-300 rounded-lg shadow-sm px-2'>
+        <div className='flex bg-zinc-900 text-zinc-300 rounded-lg shadow-sm px-2'>
           <LoopOneButton onClick={(newLoop) => loop.current = newLoop}/>
           <div className='flex-1'></div>
-          <button className='px-2 py-3 hover:text-zinc-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
+          <button className='px-2 py-3 hover:text-zinc-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
             onClick={playPrev}
           >
             <MdSkipPrevious className='w-7 h-7'/>
@@ -232,13 +232,13 @@ function PlayerPage({playlist, updateQueue, videos}) {
               playingRef.current = !playingRef.current;
             }}
           />
-          <button className='px-2 py-3 hover:text-zinc-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
+          <button className='px-2 py-3 hover:text-zinc-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
             onClick={playNext}
           >
             <MdSkipNext className='w-7 h-7'/>
           </button>
           <div className='flex-1'></div>
-          <button className='px-3 py-3 hover:text-zinc-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
+          <button className='px-3 py-3 hover:text-zinc-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
             onClick={async () => {
               shuffleQueue(queue.current);
               updatePlayer();
@@ -346,10 +346,10 @@ function ImportPage({playlists, updatePlaylists}) {
   return (
     <div className="w-full max-w-md space-y-8 mb-8">
       <div>
-        <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-zinc-50">
+        <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-zinc-200">
           Import a playlist
         </h2>
-        <p className="mt-2 text-center text-sm text-zinc-400">
+        <p className="mt-2 text-center text-sm text-zinc-500">
           Download playlist informaton from Youtube for remote playback.<br/>
           The playlist must be public, and you don't need to import the entire playlist if you've already imported it on another device.
         </p>
@@ -358,7 +358,7 @@ function ImportPage({playlists, updatePlaylists}) {
         <div className="-space-y-1 rounded-md shadow-lg">
           <div>
             <label htmlFor="playlistUrl" className="sr-only">Enter a playlist url</label>
-            <input onChange={e => setPlaylistUrl(e.target.value.trim())} id="playlistUrl" name="playlistUrl" type="text" autoComplete="off" className="relative block w-full rounded-md border-0 py-1.5 text-zinc-100 ring-1 ring-inset ring-zinc-700 placeholder:text-zinc-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-red-600 text-sm leading-6 px-3 bg-zinc-900" placeholder='Enter a playlist url'/>
+            <input onChange={e => setPlaylistUrl(e.target.value.trim())} id="playlistUrl" name="playlistUrl" type="text" autoComplete="off" className="relative block w-full rounded-md border-0 py-1.5 text-zinc-200 ring-1 ring-inset ring-zinc-800 placeholder:text-zinc-500 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-red-600 text-sm leading-6 px-3 bg-zinc-950" placeholder='Enter a playlist url'/>
           </div>
         </div>
         <div>
@@ -371,7 +371,7 @@ function ImportPage({playlists, updatePlaylists}) {
           >
             Import entire playlist
           </button>
-          <button className="mt-2 group relative flex w-full justify-center rounded-md bg-zinc-800 py-2 px-3 text-sm font-medium text-zinc-300 hover:bg-zinc-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 shadow-sm"
+          <button className="mt-2 group relative flex w-full justify-center rounded-md bg-zinc-900 py-2 px-3 text-sm font-medium text-zinc-400 hover:bg-zinc-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 shadow-sm"
             onClick={async () => {
               let playlistId = getPlaylistId(playlistUrl);
               fetch('https://kamiak-io.fly.dev/yuu/update?playlist_id='+playlistId, {method: 'POST'});
@@ -431,18 +431,18 @@ function App() {
   }
 
   return (
-    <div className="flex flex-col min-h-full items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-zinc-900 selection:bg-red-600/80 selection:text-white">
+    <div className="flex flex-col min-h-full items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-zinc-950 selection:bg-red-600/80 selection:text-white">
       <Routes>
         <Route path='/' element={<PlayerSwitcher key={'player'+playerCount} playlists={playlists.current} savePlaylists={savePlaylists} syncPlaylists={syncPlaylists}/>}></Route>
         <Route path='/play' element={<PlaylistLoadingPage playlists={playlists.current} savePlaylists={savePlaylists} syncPlaylists={syncPlaylists}/>}></Route>
         <Route path='/import' element={<ImportPage playlists={playlists.current} updatePlaylists={updatePlaylists}/>}></Route>
       </Routes>
-      <footer className='fixed bottom-0 px-6 py-5 text-sm text-zinc-400 backdrop-blur-lg bg-zinc-900/80 flex z-50 border-1 border-zinc-900 border-b-0 w-full justify-center'>
-        <div className='pr-3 border-r border-zinc-700 font-semibold focus-visible:text-zinc-200'>
-          <Link to='/' className={'inline-flex h-full rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600' + (tab == 0 ? ' text-zinc-300' : '')} onClick={() => setPlayerCount(playerCount+1)}>Player</Link>
+      <footer className='fixed bottom-0 px-6 py-5 text-sm text-zinc-500 backdrop-blur-lg bg-zinc-950/80 flex z-50 border-1 border-zinc-950 border-b-0 w-full justify-center'>
+        <div className='pr-3 border-r border-zinc-800 font-semibold focus-visible:text-zinc-300'>
+          <Link to='/' className={'inline-flex h-full rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600' + (tab == 0 ? ' text-zinc-400' : '')} onClick={() => setPlayerCount(playerCount+1)}>Player</Link>
         </div>
-        <div className='px-3 border-r border-zinc-700 font-semibold'>
-          <Link to='/import' className={'inline-flex h-full rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600' + (tab == 1 ? ' text-zinc-300' : '')}>Import</Link>
+        <div className='px-3 border-r border-zinc-800 font-semibold'>
+          <Link to='/import' className={'inline-flex h-full rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600' + (tab == 1 ? ' text-zinc-400' : '')}>Import</Link>
         </div>
         <a href="https://github.com/jwseph/youtube-player" target='_blank' className='rounded-sm font-semibold ml-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600'>Github</a>
       </footer>
