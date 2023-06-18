@@ -185,7 +185,7 @@ function PlayerController({playingCallback, playingRef, playerRef, loop, updateP
   const [video, setVideo] = useState('unloaded');
   useEffect(() => {
     setVideoCallback(setVideo);
-  }, [video]);
+  }, []);
   return (
     <div className='flex flex-col bg-zinc-900 text-zinc-300 rounded-lg shadow-sm'>
       <div className='flex px-2'>
