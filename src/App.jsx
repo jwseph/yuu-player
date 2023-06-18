@@ -6,6 +6,8 @@ import YouTube from 'react-youtube'
 import { MdSkipNext, MdSkipPrevious, MdShuffle, MdPlayArrow, MdPause, MdRepeatOne, MdRepeatOneOn, MdKeyboardArrowDown, MdKeyboardArrowUp } from 'react-icons/md';
 import LoadingBar from 'react-top-loading-bar'
 
+const BASE = 'https://kamiak-io.fly.dev/yuu/'
+
 const getPlaylistId = (url) => new URL(url).searchParams.get('list');
 
 const shuffleQueue = (queue) => {
@@ -16,7 +18,7 @@ const shuffleQueue = (queue) => {
 }
 
 const updatePlaylistInfo = async (playlists, updatePlaylists, playlistId) => {
-  let resp = await fetch('https://kamiak-io.fly.dev/yuu/get_playlist_info?playlist_id='+playlistId, {method: 'GET'});
+  let resp = await fetch(BASE+'get_playlist_info?playlist_id='+playlistId);
   let playlist = await resp.json();
   playlists[playlistId] = {...playlists[playlistId] || {}, ...playlist};
   updatePlaylists();
@@ -163,30 +165,25 @@ function DescriptionButton({onClick}) {
   )
 }
 
-function ChannelIcon({channelUrl}) {
-  const [image, setImage] = useState('');
-  useEffect(() => {
-    (async () => {
-      let resp = await fetch(
-        'https://kamiak-io.fly.dev/yuu/get_channel_image?channel_url='+encodeURIComponent(channelUrl)
-      );
-      setImage(await resp.json());
-    })()
-  }, [image, channelUrl]);
-  return image ? (
-    <img src={image} className='w-8 h-8 rounded-full'/>
-  ) : (
-    <div className='w-8 h-8 rounded-full bg-zinc-800'></div>
-  )
-}
-
 function PlayerController({playingCallback, playingRef, playerRef, loop, updatePlayer, playPrev, playNext, setVideoCallback}) {
   const [description, setDescription] = useState(false);
-  const [video, setVideo] = useState('unloaded');
+  const [video, setVideo] = useState();
+  const [channelImage, setChannelImage] = useState();
+  const [channelSubscribers, setChannelSubscribers] = useState('');
   const URL_REGEX = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/;
   useEffect(() => {
     setVideoCallback(setVideo);
   }, []);
+  useEffect(() => {
+    (async () => {
+      let resp = await fetch(
+        BASE+'get_channel_info?channel_url='+encodeURIComponent(video.channel_url)
+      );
+      let data = await resp.json();
+      setChannelImage(data.image);
+      setChannelSubscribers(data.subscribers);
+    })()
+  }, [video]);
   return (
     <div className='flex flex-col bg-zinc-900 text-zinc-300 rounded-lg shadow-sm'>
       <div className='flex px-2'>
@@ -227,11 +224,18 @@ function PlayerController({playingCallback, playingRef, playerRef, loop, updateP
         <div className='px-5 py-5 text-xs border-t border-zinc-950 text-zinc-300 whitespace-pre-wrap break-words space-y-4'>
           <div className='flex items-center'>
             <a href={video.channel_url} target='_blank'>
-              <ChannelIcon channelUrl={video.channel_url}/>
+              {channelImage ? (
+                <img src={channelImage} className='w-12 h-12 rounded-full'/>
+              ) : (
+                <div className='w-12 h-12 rounded-full bg-zinc-800'></div>
+              )}
             </a>
-            <a href={video.channel_url} target='_blank' className='font-bold text-sm hover:text-zinc-200 px-3 py-1'>
-              {video.channel}
-            </a>
+            <div className='flex flex-col py-1'>
+              <a href={video.channel_url} target='_blank' className='font-bold text-base hover:text-zinc-200 px-3'>
+                {video.channel}
+              </a>
+              <span className='px-3 text-zinc-400'>{channelSubscribers}</span>
+            </div>
           </div>
           <div className='text-zinc-400'>
             {video.description == null || video.description == undefined ? (
@@ -356,7 +360,7 @@ function PlayerSwitcher({playlists, savePlaylists, syncPlaylists}) {
   return (
     !playlist?.queue ? (
       <SelectPlaylistPage setPlaylist={async (playlist) => {
-        let resp = await fetch('https://kamiak-io.fly.dev/yuu/get_playlist_videos?playlist_id='+getPlaylistId(playlist.url));
+        let resp = await fetch(BASE+'get_playlist_videos?playlist_id='+getPlaylistId(playlist.url));
         setVideos(await resp.json());
         // Maybe show loading bar here
         setPlaylist(playlist);
@@ -391,7 +395,7 @@ function PlaylistLoadingPage({playlists, savePlaylists, syncPlaylists}) {
         })();
       }
 
-      setVideos(await (await fetch('https://kamiak-io.fly.dev/yuu/get_playlist_videos?playlist_id='+playlistId)).json());
+      setVideos(await (await fetch(BASE+'get_playlist_videos?playlist_id='+playlistId)).json());
       setProgress(60);
       
       if (!(playlistId in playlists)) await prom;
@@ -453,7 +457,7 @@ function ImportPage({playlists, updatePlaylists}) {
           <button className="group relative flex w-full justify-center rounded-md bg-red-700 py-2 px-3 text-sm font-medium text-red-50 hover:bg-red-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 shadow-sm"
             onClick={async () => {
               let playlistId = getPlaylistId(playlistUrl);
-              fetch('https://kamiak-io.fly.dev/yuu/import?playlist_id='+playlistId, {method: 'POST'});
+              fetch(BASE+'import?playlist_id='+playlistId, {method: 'POST'});
               await updatePlaylistInfo(playlists, updatePlaylists, playlistId);
             }}
           >
@@ -462,7 +466,7 @@ function ImportPage({playlists, updatePlaylists}) {
           <button className="mt-2 group relative flex w-full justify-center rounded-md bg-zinc-900 py-2 px-3 text-sm font-medium text-zinc-400 hover:bg-zinc-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 shadow-sm"
             onClick={async () => {
               let playlistId = getPlaylistId(playlistUrl);
-              fetch('https://kamiak-io.fly.dev/yuu/update?playlist_id='+playlistId, {method: 'POST'});
+              fetch(BASE+'update?playlist_id='+playlistId, {method: 'POST'});
               await updatePlaylistInfo(playlists, updatePlaylists, playlistId);
             }}
           >
@@ -495,7 +499,7 @@ function App() {
     for (const playlistId in playlists.current) {
       await updatePlaylistInfo(playlists.current, updatePlaylists, playlistId);
       const playlist = playlists.current[playlistId];
-      let resp = await fetch('https://kamiak-io.fly.dev/yuu/get_playlist_video_ids?playlist_id='+playlistId);
+      let resp = await fetch(BASE+'get_playlist_video_ids?playlist_id='+playlistId);
       let newVideoIds = await resp.json();
       if (newVideoIds == null) continue;
       if (!playlist.queue) {
