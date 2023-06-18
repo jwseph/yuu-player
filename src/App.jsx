@@ -78,7 +78,9 @@ function SelectPlaylistPage({playlists, syncPlaylists, setPlaylist}) {
                       <div className='text-sm text-zinc-500'>{Object.keys(playlist.videoIds).length} videos</div>
                     )}
                   </div>
-                  <div className='text-sm text-zinc-500 whitespace-pre-line text-left pt-2'>{playlist.description || '[No description]'}</div>
+                  {playlist.description && (
+                    <div className='text-sm text-zinc-500 whitespace-pre-line text-left pt-2'>{playlist.description}</div>
+                  )}
                 </div>
               </button>
             )
