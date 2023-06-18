@@ -3,7 +3,7 @@ import './App.css'
 import { Route, Link, Routes } from 'react-router-dom'
 import { LazyLoadImage } from 'react-lazy-load-image-component'
 import YouTube from 'react-youtube'
-import { MdSkipNext, MdSkipPrevious, MdShuffle, MdPlayArrow, MdPause, MdRepeatOne, MdRepeatOneOn } from 'react-icons/md';
+import { MdSkipNext, MdSkipPrevious, MdShuffle, MdPlayArrow, MdPause, MdRepeatOne, MdRepeatOneOn, MdKeyboardArrowDown, MdKeyboardArrowUp } from 'react-icons/md';
 import LoadingBar from 'react-top-loading-bar'
 
 const getPlaylistId = (url) => new URL(url).searchParams.get('list');
@@ -124,7 +124,7 @@ function PauseButton({addPlayingListener, onClick}) {
     addPlayingListener((playing) => setPlaying(playing));
   }, [playing, setPlaying])
   return (
-    <button className='px-3 py-3 hover:text-zinc-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
+    <button className='px-2 py-3 hover:text-zinc-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
       onClick={async () => {
         setPlaying(!playing);
         await onClick();
@@ -138,7 +138,7 @@ function PauseButton({addPlayingListener, onClick}) {
 function LoopOneButton({onClick}) {
   const [loop, setLoop] = useState(false)
   return (
-    <button className='px-3 py-3 hover:text-zinc-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
+    <button className='px-2 py-3 hover:text-zinc-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
       onClick={() => {
         onClick(!loop);
         setLoop(!loop);
@@ -149,12 +149,105 @@ function LoopOneButton({onClick}) {
   )
 }
 
+function DescriptionButton({onClick}) {
+  const [description, setDescription] = useState(false);
+  return (
+    <button className='px-2 py-3 hover:text-zinc-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
+      onClick={() => {
+        onClick(!description);
+        setDescription(!description);
+      }}
+    >
+      {!description ? <MdKeyboardArrowDown className='w-7 h-7'/> : <MdKeyboardArrowUp className='w-7 h-7'/>}
+    </button>
+  )
+}
+
+function ChannelIcon({channelUrl}) {
+  const [image, setImage] = useState('');
+  useEffect(() => {
+    (async () => {
+      let resp = await fetch(
+        'https://kamiak-io.fly.dev/yuu/get_channel_image?channel_url='+encodeURIComponent(channelUrl)
+      );
+      setImage(await resp.json());
+    })()
+  }, [image, channelUrl]);
+  return image ? (
+    <img src={image} className='w-8 h-8 rounded-full'/>
+  ) : (
+    <div className='w-8 h-8 rounded-full bg-zinc-800'></div>
+  )
+}
+
+function PlayerController({playingCallback, playingRef, playerRef, loop, updatePlayer, playPrev, playNext, setVideoCallback}) {
+  const [description, setDescription] = useState(false);
+  const [video, setVideo] = useState('unloaded');
+  useEffect(() => {
+    setVideoCallback(setVideo);
+  }, [video]);
+  return (
+    <div className='flex flex-col bg-zinc-900 text-zinc-300 rounded-lg shadow-sm'>
+      <div className='flex px-2'>
+        <DescriptionButton onClick={(newDescription) => setDescription(newDescription)}/>
+        <button className='px-2 py-3 invisible'>
+          <MdShuffle className='w-7 h-7'/>
+        </button>
+        <div className='flex-1'></div>
+        <button className='px-1 py-3 hover:text-zinc-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
+          onClick={playPrev}
+        >
+          <MdSkipPrevious className='w-7 h-7'/>
+        </button>
+        <PauseButton addPlayingListener={(callback) => playingCallback.current = callback}
+          onClick={async () => {
+            if (playingRef.current) await playerRef.current.internalPlayer.pauseVideo();
+            else await playerRef.current.internalPlayer.playVideo();
+            playingRef.current = !playingRef.current;
+          }}
+        />
+        <button className='px-1 py-3 hover:text-zinc-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
+          onClick={playNext}
+        >
+          <MdSkipNext className='w-7 h-7'/>
+        </button>
+        <div className='flex-1'></div>
+        <LoopOneButton onClick={(newLoop) => loop.current = newLoop}/>
+        <button className='px-2 py-3 hover:text-zinc-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
+          onClick={async () => {
+            shuffleQueue(queue.current);
+            updatePlayer();
+          }}
+        >
+          <MdShuffle className='w-7 h-7'/>
+        </button>
+      </div>
+      {description && (
+        <div className='px-5 py-5 text-xs border-t border-zinc-950 text-zinc-300 whitespace-pre-wrap break-words space-y-4'>
+          <div className='flex items-center'>
+            <a href={video.channel_url} target='_blank'>
+              <ChannelIcon channelUrl={video.channel_url}/>
+            </a>
+            <a href={video.channel_url} target='_blank' className='font-semibold text-sm hover:text-zinc-200 px-3 py-1'>
+              {video.channel}
+            </a>
+          </div>
+          <div>
+            {video.description ?? '[Re-import the playlist for video descriptions]'}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function PlayerPage({playlist, updateQueue, videos}) {
   const queue = useRef(playlist.queue);
   const playerRef = useRef(null);
   const playingRef = useRef(false);
   const playingCallback = useRef();
   const queueUpdateCallback = useRef();
+  const videoCallback = useRef();
   const previousStates = useRef([-2, -2, -2]);
   const loop = useRef(false);
   useEffect(() => {
@@ -168,6 +261,7 @@ function PlayerPage({playlist, updateQueue, videos}) {
     setTitle();
     updateQueue(queue.current);
     queueUpdateCallback.current(queue.current);
+    videoCallback.current?.({...videos[queue.current[0]]});
   }
   function seekTo(i) {
     const newQueue = [];
@@ -217,36 +311,19 @@ function PlayerPage({playlist, updateQueue, videos}) {
             {youtubePlayer}
           </div>
         </div>
-        <div className='flex bg-zinc-900 text-zinc-300 rounded-lg shadow-sm px-2'>
-          <LoopOneButton onClick={(newLoop) => loop.current = newLoop}/>
-          <div className='flex-1'></div>
-          <button className='px-2 py-3 hover:text-zinc-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
-            onClick={playPrev}
-          >
-            <MdSkipPrevious className='w-7 h-7'/>
-          </button>
-          <PauseButton addPlayingListener={(callback) => playingCallback.current = callback}
-            onClick={async () => {
-              if (playingRef.current) await playerRef.current.internalPlayer.pauseVideo();
-              else await playerRef.current.internalPlayer.playVideo();
-              playingRef.current = !playingRef.current;
-            }}
-          />
-          <button className='px-2 py-3 hover:text-zinc-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
-            onClick={playNext}
-          >
-            <MdSkipNext className='w-7 h-7'/>
-          </button>
-          <div className='flex-1'></div>
-          <button className='px-3 py-3 hover:text-zinc-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
-            onClick={async () => {
-              shuffleQueue(queue.current);
-              updatePlayer();
-            }}
-          >
-            <MdShuffle className='w-7 h-7'/>
-          </button>
-        </div>
+        <PlayerController
+          playingCallback={playingCallback}
+          playingRef={playingRef}
+          playerRef={playerRef}
+          loop={loop}
+          updatePlayer={updatePlayer}
+          playPrev={playPrev}
+          playNext={playNext}
+          setVideoCallback={(callback) => {
+            videoCallback.current = callback;
+            videoCallback.current?.({...videos[queue.current[0]]});
+          }}
+        />
         <div>
           <PlaylistQueue videos={videos} initialQueue={queue.current}
             setQueueUpdateCallback={(callback) => queueUpdateCallback.current = callback}
