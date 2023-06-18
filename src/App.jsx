@@ -183,6 +183,7 @@ function ChannelIcon({channelUrl}) {
 function PlayerController({playingCallback, playingRef, playerRef, loop, updatePlayer, playPrev, playNext, setVideoCallback}) {
   const [description, setDescription] = useState(false);
   const [video, setVideo] = useState('unloaded');
+  const URL_REGEX = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/;
   useEffect(() => {
     setVideoCallback(setVideo);
   }, []);
@@ -228,12 +229,22 @@ function PlayerController({playingCallback, playingRef, playerRef, loop, updateP
             <a href={video.channel_url} target='_blank'>
               <ChannelIcon channelUrl={video.channel_url}/>
             </a>
-            <a href={video.channel_url} target='_blank' className='font-semibold text-sm hover:text-zinc-200 px-3 py-1'>
+            <a href={video.channel_url} target='_blank' className='font-bold text-sm hover:text-zinc-200 px-3 py-1'>
               {video.channel}
             </a>
           </div>
-          <div>
-            {video.description ?? '[Re-import the playlist for video descriptions]'}
+          <div className='text-zinc-400'>
+            {video.description == null || video.description == undefined ? (
+              '[Re-import the playlist for video descriptions]'
+            ) : (
+              video.description
+              .split(/([\s：（）\[\]\(\)])/)
+              .map(token =>
+                URL_REGEX.test(token) ? (
+                  <a href={token} target='_blank' className='font-medium text-zinc-300 hover:text-zinc-200 underline underline-offset-2 decoration-zinc-700 hover:decoration-zinc-600'>{token}</a>
+                ) : token
+              )
+            )}
           </div>
         </div>
       )}
