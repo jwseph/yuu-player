@@ -36,7 +36,7 @@ function SelectPlaylistPage({playlists, syncPlaylists, setPlaylist}) {
   }, [])
 
   return (
-    <div className="w-full max-w-lg space-y-8 mb-8">
+    <div className="w-full max-w-3xl space-y-8 mb-8">
       <div>
         <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-zinc-200">
           Select a playlist
@@ -75,7 +75,7 @@ function SelectPlaylistPage({playlists, syncPlaylists, setPlaylist}) {
                     {!playlist.queue ? (
                       <div className='text-sm text-zinc-500'>Importing videos...</div>
                     ) : (
-                      <div className='text-sm text-zinc-500'>{Object.keys(playlist.videoIds).length} videos</div>
+                      <div className='text-sm text-zinc-500'>{playlist.queue.length} videos</div>
                     )}
                   </div>
                   {playlist.description && (
@@ -178,6 +178,7 @@ function PlayerController({playingCallback, playingRef, playerRef, loop, updateP
   }, []);
   useEffect(() => {
     (async () => {
+      if (!video) return;
       let resp = await fetch(
         BASE+'get_channel_info?channel_url='+encodeURIComponent(video.channel_url)
       );
@@ -227,7 +228,7 @@ function PlayerController({playingCallback, playingRef, playerRef, loop, updateP
           <div className='flex items-center'>
             <a href={video.channel_url} target='_blank'>
               {channelImage ? (
-                <img src={channelImage} className='w-12 h-12 rounded-full'/>
+                <img src={channelImage} className='w-12 h-12 rounded-full' crossorigin='anonymous'/>
               ) : (
                 <div className='w-12 h-12 rounded-full bg-zinc-800'></div>
               )}
@@ -245,9 +246,9 @@ function PlayerController({playingCallback, playingRef, playerRef, loop, updateP
             ) : (
               video.description
               .split(/([\s：（）\[\]\(\)])/)
-              .map(token =>
+              .map((token, i) =>
                 URL_REGEX.test(token) ? (
-                  <a href={token} target='_blank' className='font-medium text-zinc-300 hover:text-zinc-200 underline underline-offset-2 decoration-zinc-700 hover:decoration-zinc-600'>{token}</a>
+                  <a key={'desclink_'+i} href={token} target='_blank' className='font-medium text-zinc-300 hover:text-zinc-200 underline underline-offset-2 decoration-zinc-700 hover:decoration-zinc-600'>{token}</a>
                 ) : token
               )
             )}
@@ -313,14 +314,16 @@ function PlayerPage({playlist, updateQueue, videos}) {
   />, [queue, playerRef, updatePlayer])
 
   return (
-    <div className="w-full max-w-lg space-y-8 mb-8">
+    <div className="w-full max-w-3xl space-y-8 mb-8">
       <div>
         <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-zinc-200">
           {playlist.title}
         </h2>
-        <p className="mt-2 text-center text-sm text-zinc-500">
-          {playlist.queue.length} videos
-        </p>
+        <div className='mt-2 flex justify-center'>
+          <div className='text-sm text-zinc-400 font-medium'>{playlist.channel}</div>
+          <div className='px-2 text-sm text-zinc-500'>·</div>
+          <div className='text-sm text-zinc-500'>{playlist.queue.length} videos</div>
+        </div>
       </div>
       <div className='flex flex-col gap-3'>
         <div>
