@@ -16,3 +16,7 @@ A YouTube playlist player made with React and Tailwind
 - Make usage more intuitive and streamlined for new users
   - Combine "import" and "update" options
 - Improve queue-rendering speed (currently only shows top 70 videos to avoid lag)
+
+## Known bugs
+- If you manually end a video while it is loading, the player may begin repeatedly skipping videos
+  - This has something to do with the feature that skips unavailable videos, but I'm not sure how to fix it.
