@@ -167,7 +167,7 @@ function DescriptionButton({onClick}) {
   )
 }
 
-function PlayerController({playingCallback, playingRef, playerRef, loop, updatePlayer, playPrev, playNext, setVideoCallback}) {
+function PlayerController({playingCallback, playingRef, playerRef, loop, updatePlayer, playPrev, playNext, shuffle, setVideoCallback}) {
   const [description, setDescription] = useState(false);
   const [video, setVideo] = useState();
   const [channelImage, setChannelImage] = useState();
@@ -216,7 +216,7 @@ function PlayerController({playingCallback, playingRef, playerRef, loop, updateP
         <LoopOneButton onClick={(newLoop) => loop.current = newLoop}/>
         <button className='px-2 py-3 hover:text-zinc-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
           onClick={async () => {
-            shuffleQueue(queue.current);
+            shuffle();
             updatePlayer();
           }}
         >
@@ -339,6 +339,7 @@ function PlayerPage({playlist, updateQueue, videos}) {
           updatePlayer={updatePlayer}
           playPrev={playPrev}
           playNext={playNext}
+          shuffle={() => shuffleQueue(queue.current)}
           setVideoCallback={(callback) => {
             videoCallback.current = callback;
             videoCallback.current?.({...videos[queue.current[0]]});
