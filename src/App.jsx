@@ -4,6 +4,7 @@ import { Route, Link, Routes } from 'react-router-dom'
 import { LazyLoadImage } from 'react-lazy-load-image-component'
 import YouTube from 'react-youtube'
 import { MdSkipNext, MdSkipPrevious, MdShuffle, MdPlayArrow, MdPause, MdRepeatOne, MdRepeatOneOn, MdKeyboardArrowDown, MdKeyboardArrowUp } from 'react-icons/md';
+import { RiPlayFill, RiPauseFill, RiSkipBackFill, RiSkipForwardFill, RiShuffleFill, RiRepeat2Fill, RiRepeatOneFill, RiArrowDownSFill, RiArrowUpSFill } from "react-icons/ri";
 import LoadingBar from 'react-top-loading-bar'
 
 const BASE = 'https://kamiak-io.fly.dev/yuu/'
@@ -55,15 +56,15 @@ function SelectPlaylistPage({playlists, syncPlaylists, setPlaylist}) {
           {Object.keys(playlists).map(playlistId => {
             let playlist = playlists[playlistId];
             return (
-              <button key={playlistId} className={'items-center w-full bg-zinc-900 px-6 py-4 flex gap-5 rounded-lg shadow-sm opacity-50' + (!playlist?.queue ? ' cursor-default' : ' cursor-pointer hover:bg-zinc-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 !opacity-100')} tabIndex={!playlist?.queue ? '-1' : '0'}
+              <button key={playlistId} className={'items-center w-full bg-zinc-900 px-6 py-4 flex gap-5 rounded-sm shadow-sm opacity-50' + (!playlist?.queue ? ' cursor-default' : ' cursor-pointer hover:bg-zinc-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 !opacity-100')} tabIndex={!playlist?.queue ? '-1' : '0'}
                 onClick={() => {
                   if (!playlist.queue) return;
                   setPlaylist(playlist)
                   history.replaceState(null, 'Youtube Player', '/play?list='+playlistId);
                 }}
               >
-                <a tabIndex='-1' href={playlist.url} target='_blank' onClick={e => e.stopPropagation()} className='focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-red-600 rounded-md'>
-                  <div className="group aspect-square h-28 relative bg-gradient-to-tr	from-zinc-900 to-zinc-950 rounded-md shadow-sm overflow-hidden">
+                <a tabIndex='-1' href={playlist.url} target='_blank' onClick={e => e.stopPropagation()} className='focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-red-600 rounded-sm'>
+                  <div className="group aspect-square h-28 relative bg-gradient-to-tr	from-zinc-900 to-zinc-950 rounded-sm shadow-sm overflow-hidden">
                     <div className="absolute inset-0 bg-cover bg-center z-0 group-hover:scale-110 duration-200 ease-in-out" style={{backgroundImage: 'url('+playlist.thumbnails.small+')'}}></div>
                   </div>
                 </a>
@@ -97,11 +98,11 @@ function PlaylistQueue({initialQueue, videos, onClick, setQueueUpdateCallback}) 
     setQueueUpdateCallback((queue) => setQueue([...queue]));
   }, [queue, setQueue]);
   return (
-    <div className='flex flex-col rounded-lg'>
+    <div className='flex flex-col rounded-sm'>
       {queue.slice(0, 70).map((videoId, i) => {
         let video = videos[videoId];
         return (
-          <button key={videoId} className='shadow-md bg-zinc-900 hover:bg-zinc-800 mb-px border-zinc-800 last:mb-0 px-4 py-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 focus-visible:z-10 last:rounded-b-lg first:rounded-t-lg'
+          <button key={videoId} className='shadow-md bg-zinc-900 active:opacity-50 active:scale-95 duration-100 mb-px border-zinc-800 last:mb-0 px-4 py-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 focus-visible:z-10 last:rounded-b-sm first:rounded-t-sm'
             onClick={() => onClick(i)}
           >
             <div className='flex items-center space-x-3'>
@@ -111,7 +112,7 @@ function PlaylistQueue({initialQueue, videos, onClick, setQueueUpdateCallback}) 
               />
               <div className='inline-flex flex-col flex-1 truncate'>
                 <h1 className='truncate text-xs text-left flex-1 font-semibold text-zinc-300'>{video.title}</h1>
-                <h1 className='truncate text-xs text-left text-zinc-500'>{video.channel}</h1>
+                <span className='truncate text-xs text-left text-zinc-500'>{video.channel}</span>
               </div>
               <div className='pl-2 text-xs text-zinc-700 text-left'>{i || '#'}</div>
             </div>
@@ -128,13 +129,13 @@ function PauseButton({addPlayingListener, onClick}) {
     addPlayingListener((playing) => setPlaying(playing));
   }, [playing, setPlaying])
   return (
-    <button className='px-2 py-3 hover:text-zinc-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
+    <button className='p-[.66rem] text-zinc-950 bg-zinc-50 active:opacity-50 active:scale-95 duration-100 ease-in-out aspect-square rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600'
       onClick={async () => {
         setPlaying(!playing);
         await onClick();
       }}
     >
-      {!playing ? <MdPlayArrow className='w-8 h-8'/> : <MdPause className='w-8 h-8'/>}
+      {!playing ? <RiPlayFill className='w-8 h-8'/> : <RiPauseFill className='w-8 h-8'/>}
     </button>
   )
 }
@@ -142,13 +143,13 @@ function PauseButton({addPlayingListener, onClick}) {
 function LoopOneButton({onClick}) {
   const [loop, setLoop] = useState(false)
   return (
-    <button className='px-2 py-3 hover:text-zinc-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
+    <button className='p-3 -mr-3 text-zinc-50 active:opacity-50 active:scale-95 duration-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
       onClick={() => {
         onClick(!loop);
         setLoop(!loop);
       }}
     >
-      {!loop ? <MdRepeatOne className='w-7 h-7'/> : <MdRepeatOneOn className='w-7 h-7'/>}
+      {!loop ? <RiRepeat2Fill className='w-5 h-5'/> : <RiRepeatOneFill className='w-5 h-5'/>}
     </button>
   )
 }
@@ -156,13 +157,13 @@ function LoopOneButton({onClick}) {
 function DescriptionButton({onClick}) {
   const [description, setDescription] = useState(false);
   return (
-    <button className='px-2 py-3 hover:text-zinc-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
+    <button className='p-3 hover:text-zinc-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
       onClick={() => {
         onClick(!description);
         setDescription(!description);
       }}
     >
-      {!description ? <MdKeyboardArrowDown className='w-7 h-7'/> : <MdKeyboardArrowUp className='w-7 h-7'/>}
+      {!description ? <RiArrowDownSFill className='w-7 h-7'/> : <RiArrowUpSFill className='w-7 h-7'/>}
     </button>
   )
 }
@@ -187,74 +188,100 @@ function PlayerController({playingCallback, playingRef, playerRef, loop, updateP
       setChannelSubscribers(data.subscribers);
     })()
   }, [video]);
+  async function togglePlaying() {
+    if (playingRef.current) await playerRef.current.internalPlayer.pauseVideo();
+    else await playerRef.current.internalPlayer.playVideo();
+    playingRef.current = !playingRef.current;
+  }
+  function handleKeyPressed(e) {
+    if (e.key == ' ') {
+      e.preventDefault();
+      togglePlaying();
+    }
+    if (e.key == 'ArrowLeft') {
+      e.preventDefault();
+      playPrev();
+    }
+    if (e.key == 'ArrowRight') {
+      e.preventDefault();
+      playNext();
+    }
+  }
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyPressed);
+    return () => document.removeEventListener('keydown', handleKeyPressed);
+  })
   return (
-    <div className='flex flex-col bg-zinc-900 text-zinc-300 rounded-lg shadow-sm'>
-      <div className='flex px-2'>
-        <DescriptionButton onClick={(newDescription) => setDescription(newDescription)}/>
-        <button className='px-2 py-3 invisible'>
-          <MdShuffle className='w-7 h-7'/>
-        </button>
-        <div className='flex-1'></div>
-        <button className='px-1 py-3 hover:text-zinc-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
-          onClick={playPrev}
-        >
-          <MdSkipPrevious className='w-7 h-7'/>
-        </button>
-        <PauseButton addPlayingListener={(callback) => playingCallback.current = callback}
-          onClick={async () => {
-            if (playingRef.current) await playerRef.current.internalPlayer.pauseVideo();
-            else await playerRef.current.internalPlayer.playVideo();
-            playingRef.current = !playingRef.current;
-          }}
-        />
-        <button className='px-1 py-3 hover:text-zinc-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
-          onClick={playNext}
-        >
-          <MdSkipNext className='w-7 h-7'/>
-        </button>
-        <div className='flex-1'></div>
-        <LoopOneButton onClick={(newLoop) => loop.current = newLoop}/>
-        <button className='px-2 py-3 hover:text-zinc-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
-          onClick={async () => {
-            shuffle();
-            updatePlayer();
-          }}
-        >
-          <MdShuffle className='w-7 h-7'/>
-        </button>
-      </div>
-      {description && (
-        <div className='px-5 py-5 text-xs border-t border-zinc-950 text-zinc-300 whitespace-pre-wrap break-words space-y-4'>
-          <div className='flex items-center'>
-            <a href={video.channel_url} target='_blank'>
-              {channelImage ? (
-                <img src={channelImage} className='w-12 h-12 rounded-full' crossorigin='anonymous'/>
-              ) : (
-                <div className='w-12 h-12 rounded-full bg-zinc-800'></div>
-              )}
-            </a>
-            <div className='flex flex-col py-1'>
-              <a href={video.channel_url} target='_blank' className='font-bold text-base hover:text-zinc-200 px-3'>
-                {video.channel}
-              </a>
-              <span className='px-3 text-zinc-400'>{channelSubscribers}</span>
-            </div>
-          </div>
-          <div className='text-zinc-400'>
-            {video.description == null || video.description == undefined ? (
-              '[Re-import the playlist for video descriptions]'
-            ) : (
-              video.description
-              .split(/([\s：（）\[\]\(\)])/)
-              .map((token, i) =>
-                URL_REGEX.test(token) ? (
-                  <a key={'desclink_'+i} href={token} target='_blank' className='font-medium text-zinc-300 hover:text-zinc-200 underline underline-offset-2 decoration-zinc-700 hover:decoration-zinc-600'>{token}</a>
-                ) : token
-              )
-            )}
-          </div>
+    <div className='py-5 space-y-5'>
+      {video && (
+        <div className='flex flex-col items-center space-y-1'>
+          <h3 className='text-xl text-center font-semibold tracking-tight truncate max-w-full'>{video.title}</h3>
+          <span className='text-sm font-light'>{video.channel}</span>
         </div>
       )}
+      <div className='flex flex-col'>
+        <div className='flex'>
+          {/* <DescriptionButton onClick={(newDescription) => setDescription(newDescription)}/> */}
+          <button className='p-3 -ml-3 text-zinc-50 active:opacity-50 active:scale-95 duration-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
+            onClick={async () => {
+              shuffle();
+              updatePlayer();
+            }}
+          >
+            <RiShuffleFill className='w-5 h-5'/>
+          </button>
+          <div className='flex-1'></div>
+          <button className='p-3 text-zinc-50 active:opacity-50 active:scale-95 duration-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
+            onClick={playPrev}
+          >
+            <RiSkipBackFill className='w-7 h-7'/>
+          </button>
+          <div className='flex-1 max-w-[1rem]'></div>
+          <PauseButton addPlayingListener={(callback) => playingCallback.current = callback}
+            onClick={togglePlaying}
+          />
+          <div className='flex-1 max-w-[1rem]'></div>
+          <button className='p-3 text-zinc-50 active:opacity-50 active:scale-95 duration-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
+            onClick={playNext}
+          >
+            <RiSkipForwardFill className='w-7 h-7'/>
+          </button>
+          <div className='flex-1'></div>
+          <LoopOneButton onClick={(newLoop) => loop.current = newLoop}/>
+        </div>
+        {description && (
+          <div className='px-5 py-5 text-xs border-t border-zinc-950 text-zinc-300 whitespace-pre-wrap break-words space-y-4'>
+            <div className='flex items-center'>
+              <a href={video.channel_url} target='_blank'>
+                {channelImage ? (
+                  <img src={channelImage} className='w-12 h-12 rounded-full' crossOrigin='anonymous'/>
+                ) : (
+                  <div className='w-12 h-12 rounded-full bg-zinc-800'></div>
+                )}
+              </a>
+              <div className='flex flex-col py-1'>
+                <a href={video.channel_url} target='_blank' className='font-bold text-base hover:text-zinc-200 px-3'>
+                  {video.channel}
+                </a>
+                <span className='px-3 text-zinc-400'>{channelSubscribers}</span>
+              </div>
+            </div>
+            <div className='text-zinc-400'>
+              {video.description == null || video.description == undefined ? (
+                '[Re-import the playlist for video descriptions]'
+              ) : (
+                video.description
+                .split(/([\s：（）\[\]\(\)])/)
+                .map((token, i) =>
+                  URL_REGEX.test(token) ? (
+                    <a key={'desclink_'+i} href={token} target='_blank' className='font-medium text-zinc-300 hover:text-zinc-200 underline underline-offset-2 decoration-zinc-700 hover:decoration-zinc-600'>{token}</a>
+                  ) : token
+                )
+              )}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
@@ -327,7 +354,7 @@ function PlayerPage({playlist, updateQueue, videos}) {
       </div>
       <div className='flex flex-col gap-3'>
         <div>
-          <div id='videoContainer' className='w-full aspect-video rounded-lg shadow-lg overflow-hidden group'>
+          <div id='videoContainer' className='w-full aspect-video rounded-sm shadow-lg overflow-hidden group'>
             {youtubePlayer}
           </div>
         </div>
@@ -453,14 +480,14 @@ function ImportPage({playlists, updatePlaylists}) {
         </p>
       </div>
       <form className="mt-8 space-y-6" onSubmit={e => e.preventDefault()}>
-        <div className="-space-y-1 rounded-md shadow-lg">
+        <div className="-space-y-1 rounded-sm shadow-lg">
           <div>
             <label htmlFor="playlistUrl" className="sr-only">Enter a playlist url</label>
-            <input onChange={e => setPlaylistUrl(e.target.value.trim())} id="playlistUrl" name="playlistUrl" type="text" autoComplete="off" className="relative block w-full rounded-md border-0 py-1.5 text-zinc-200 ring-1 ring-inset ring-zinc-800 placeholder:text-zinc-500 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-red-600 text-sm leading-6 px-3 bg-zinc-950" placeholder='Enter a playlist url'/>
+            <input onChange={e => setPlaylistUrl(e.target.value.trim())} id="playlistUrl" name="playlistUrl" type="text" autoComplete="off" className="relative block w-full rounded-sm border-0 py-1.5 text-zinc-200 ring-1 ring-inset ring-zinc-800 placeholder:text-zinc-500 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-red-600 text-sm leading-6 px-3 bg-zinc-950" placeholder='Enter a playlist url'/>
           </div>
         </div>
         <div>
-          <button className="group relative flex w-full justify-center rounded-md bg-red-700 py-2 px-3 text-sm font-medium text-red-50 hover:bg-red-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 shadow-sm"
+          <button className="group relative flex w-full justify-center rounded-sm bg-red-700 py-2 px-3 text-sm font-medium text-red-50 hover:bg-red-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 shadow-sm"
             onClick={async () => {
               let playlistId = getPlaylistId(playlistUrl);
               fetch(BASE+'import?playlist_id='+playlistId, {method: 'POST'});
@@ -469,7 +496,7 @@ function ImportPage({playlists, updatePlaylists}) {
           >
             Import entire playlist
           </button>
-          <button className="mt-2 group relative flex w-full justify-center rounded-md bg-zinc-900 py-2 px-3 text-sm font-medium text-zinc-400 hover:bg-zinc-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 shadow-sm"
+          <button className="mt-2 group relative flex w-full justify-center rounded-sm bg-zinc-900 py-2 px-3 text-sm font-medium text-zinc-400 hover:bg-zinc-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 shadow-sm"
             onClick={async () => {
               let playlistId = getPlaylistId(playlistUrl);
               fetch(BASE+'update?playlist_id='+playlistId, {method: 'POST'});
