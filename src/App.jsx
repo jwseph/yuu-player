@@ -472,7 +472,7 @@ function PlayerPage({playlist, updateQueue, videos}) {
         </div>
       </div> */}
       <div className='flex flex-col gap-3'>
-        <div className='h-[100svh] flex flex-col justify-between pt-4 pb-24'>
+        <div className='min-h-[100svh] flex flex-col justify-between pt-4 pb-24'>
           <div className='px-6 sm:px-12 lg:px-16'>
             <h2 className="mt-6 text-center text-md font-medium tracking-tight text-zinc-200">
               {playlist.title}
