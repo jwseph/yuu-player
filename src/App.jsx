@@ -129,13 +129,13 @@ function PauseButton({addPlayingListener, onClick}) {
     addPlayingListener((playing) => setPlaying(playing));
   }, [playing, setPlaying])
   return (
-    <button className='p-[.66rem] text-zinc-950 bg-zinc-50 active:opacity-50 active:scale-95 duration-100 ease-in-out aspect-square rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600'
+    <button className='p-3 text-zinc-950 bg-zinc-50 active:opacity-50 active:scale-95 duration-100 ease-in-out aspect-square rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600'
       onClick={async () => {
         setPlaying(!playing);
         await onClick();
       }}
     >
-      {!playing ? <RiPlayFill className='w-8 h-8'/> : <RiPauseFill className='w-8 h-8'/>}
+      {!playing ? <RiPlayFill className='w-9 h-9'/> : <RiPauseFill className='w-9 h-9'/>}
     </button>
   )
 }
@@ -284,7 +284,7 @@ function PlayerBar({playerRef}) {
   )
 }
 
-function PlayerController({playingCallback, playingRef, playerRef, loop, updatePlayer, playPrev, playNext, shuffle, setVideoCallback}) {
+function PlayerController({playingCallback, playingRef, playerRef, loop, updatePlayer, playPrev, playNext, getPrev, getNext, shuffle, setVideoCallback}) {
   const [description, setDescription] = useState(false);
   const [video, setVideo] = useState();
   const [channelImage, setChannelImage] = useState();
@@ -328,9 +328,9 @@ function PlayerController({playingCallback, playingRef, playerRef, loop, updateP
     return () => document.removeEventListener('keydown', handleKeyPressed);
   })
   return (
-    <div className='py-5 space-y-10'>
+    <div className='py-5 space-y-3'>
       {video && (
-        <div className='flex flex-col items-center space-y-1'>
+        <div className='flex flex-col items-center space-y-1 pb-2'>
           <h3 className='text-xl text-center font-semibold tracking-tight truncate max-w-full'>{video.title}</h3>
           <span className='text-sm font-light'>{video.channel}</span>
         </div>
@@ -353,7 +353,8 @@ function PlayerController({playingCallback, playingRef, playerRef, loop, updateP
           <button className='p-3 text-zinc-50 active:opacity-50 active:scale-95 duration-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
             onClick={playPrev}
           >
-            <RiSkipBackFill className='w-7 h-7'/>
+            <RiSkipBackFill className='w-9 h-9'/>
+            <img className='absolute scale-100' src={getPrev().thumbnails.small}/>
           </button>
           <div className='flex-1 max-w-[2rem]'></div>
           <PauseButton addPlayingListener={(callback) => playingCallback.current = callback}
@@ -363,7 +364,8 @@ function PlayerController({playingCallback, playingRef, playerRef, loop, updateP
           <button className='p-3 text-zinc-50 active:opacity-50 active:scale-95 duration-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
             onClick={playNext}
           >
-            <RiSkipForwardFill className='w-7 h-7'/>
+            <RiSkipForwardFill className='w-9 h-9'/>
+            <img src={getNext().thumbnails.small}/>
           </button>
           <div className='flex-1'></div>
           <LoopOneButton onClick={(newLoop) => loop.current = newLoop}/>
@@ -438,6 +440,8 @@ function PlayerPage({playlist, updateQueue, videos}) {
   const playCurr = () => playerRef.current.internalPlayer.playVideo();
   const playNext = () => seekTo(1);
   const playPrev = () => seekTo(queue.current.length-1);
+  const getNext = () => videos[queue.current[1]];
+  const getPrev = () => videos[queue.current[queue.current.length-1]];
   const youtubePlayer = useMemo(() => 
   <YouTube videoId={queue.current[0]}
     opts={{
@@ -478,8 +482,8 @@ function PlayerPage({playlist, updateQueue, videos}) {
               {playlist.title}
             </h2>
           </div>
-          <div>
-            <div id='videoContainer' className='w-full aspect-video rounded-sm shadow-lg overflow-hidden group px-6 sm:px-12 lg:px-16'>
+          <div className='px-6 sm:px-12 lg:px-16'>
+            <div id='videoContainer' className='w-full aspect-video rounded-sm shadow-lg overflow-hidden group'>
               {youtubePlayer}
             </div>
           </div>
@@ -492,6 +496,8 @@ function PlayerPage({playlist, updateQueue, videos}) {
               updatePlayer={updatePlayer}
               playPrev={playPrev}
               playNext={playNext}
+              getPrev={getPrev}
+              getNext={getNext}
               shuffle={() => shuffleQueue(queue.current)}
               setVideoCallback={(callback) => {
                 videoCallback.current = callback;
