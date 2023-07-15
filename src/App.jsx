@@ -37,7 +37,7 @@ function SelectPlaylistPage({playlists, syncPlaylists, setPlaylist}) {
   }, [])
 
   return (
-    <div className="w-full max-w-3xl space-y-8 mb-8">
+    <div className="w-full max-w-3xl py-12 px-6 sm:px-12 lg:px-16 space-y-8 mb-8">
       <div>
         <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-zinc-200">
           Select a playlist
@@ -168,6 +168,130 @@ function DescriptionButton({onClick}) {
   )
 }
 
+function PlayerBar({playerRef}) {
+  const [time, setTime] = useState(0);
+  const [duration, setDuration] = useState(1);
+  const dragging = useRef(false);
+  const endingDragging = useRef(false);
+  const updateTimeDelay = useRef(0);
+  async function updateDuration() {
+    setDuration(await playerRef.current.internalPlayer.getDuration());
+  }
+  async function updateTime() {
+    if (dragging.current) return;
+    if (updateTimeDelay.current > 0) {
+      updateTimeDelay.current--;
+      return;
+    }
+    const player = playerRef.current.internalPlayer;
+    let state = await player.getPlayerState();
+    if (state != 1 && state != 2) return;
+    console.log(dragging.current, await playerRef.current.internalPlayer.getCurrentTime());
+    setTime(await playerRef.current.internalPlayer.getCurrentTime());
+  }
+  async function getIntendedTime(e) {
+    let el = document.getElementById('PlayerBar');
+    let rect = el.getBoundingClientRect();
+    let pos = (e.clientX-rect.left)/el.clientWidth;
+    let newDuration = await playerRef.current.internalPlayer.getDuration();
+    let newTime = newDuration*pos;
+    setDuration(newDuration);
+    return Math.max(0, Math.min(newDuration, newTime));
+  }
+  function startDragging(e) {
+    dragging.current = true;
+    whenDragging(e);
+  }
+  async function stopDragging(e) {
+    console.log('MOUSEUP');
+    if (!dragging.current || endingDragging.current) return;
+
+    endingDragging.current = true;
+    await playerRef.current.internalPlayer.seekTo(await getIntendedTime(e), true);
+    endingDragging.current = false;
+
+    dragging.current = false;
+    updateTimeDelay.current = 3;
+    console.log('finish')
+  }
+  async function whenDragging(e) {
+    if (!dragging.current || endingDragging.current) return;
+    let newTime = await getIntendedTime(e);
+    setTime(newTime);
+    await playerRef.current.internalPlayer.seekTo(newTime, false);
+    // waitingTimeUpdate.current = true;
+    // setTimeout(() => waitingTimeUpdate.current = false, 500);
+    // if (dragging.current) setTime(newTime);
+    // if (!dragging.current) {
+    //   console.log(newTime, await playerRef.current.internalPlayer.getCurrentTime())
+    //   console.log('seeked to time');
+    //   wasDragging.current = false;
+    // }
+  }
+  function startDraggingTouch(e) {
+    startDragging(e.changedTouches[0]);
+  }
+  async function stopDraggingTouch(e) {
+    console.log('TOUCH UP', e)
+    await stopDragging(e.changedTouches[0]);
+  }
+  async function whenDraggingTouch(e) {
+    await whenDragging(e.changedTouches[0]);
+  }
+  function formatTime(s) {
+    if (s < 0) return '0:00';
+    const twoDigits = (t) => t < 10 ? '0'+t : ''+t;
+    let seconds = twoDigits(s%60);
+    let minutes = twoDigits((s/60|0)%60);
+    let hours = twoDigits(s/3600|0);
+    let res = minutes+':'+seconds;
+    if (+hours) res = hours+':'+res;
+    if (res[0] == '0') res = res.substring(1);
+    return res;
+  }
+  useEffect(() => {
+    document.addEventListener('mouseup', stopDragging);
+    document.addEventListener('touchend', stopDraggingTouch);
+    document.addEventListener('touchcancel', stopDraggingTouch);
+    document.addEventListener('mousemove', whenDragging);
+    document.addEventListener('touchmove', whenDraggingTouch);
+    updateTime();
+    updateDuration();
+    const interval = setInterval(updateTime, 100);
+    const interval2 = setInterval(updateDuration, 100);
+    return () => {
+      clearInterval(interval);
+      clearInterval(interval2);
+      document.removeEventListener('mouseup', stopDragging);
+      document.removeEventListener('touchend', stopDraggingTouch);
+      document.removeEventListener('touchcancel', stopDraggingTouch);
+      document.removeEventListener('mousemove', whenDragging);
+      document.removeEventListener('touchmove', whenDraggingTouch);
+    }
+  }, [])
+  return (
+    <div>
+      <div
+        id='PlayerBar'
+        className='w-full h-6 select-none flex items-center cursor-pointer touch-none'
+        onMouseDown={(e) => startDragging(e.nativeEvent)}
+        onTouchStart={(e) => startDraggingTouch(e.nativeEvent)}
+      >
+        <div
+          className='w-full h-1 bg-zinc-800 rounded-full flex items-center'
+        >
+          <div className='h-1 bg-zinc-50 rounded-full' style={{width: time/duration*100+'%'}}></div>
+          <div className={'rounded-full bg-zinc-50 duration-75 ease-in-out'+(!dragging.current || endingDragging.current ? ' w-3 h-3 -ml-1.5' : ' w-4 h-4 -ml-2')}></div>
+        </div>
+      </div>
+      <div className='w-full flex justify-between'>
+        <div className='text-xs font-light'>{formatTime(time|0)}</div>
+        <div className='text-xs font-light'>{'-'+formatTime(duration-time|0)}</div>
+      </div>
+    </div>
+  )
+}
+
 function PlayerController({playingCallback, playingRef, playerRef, loop, updatePlayer, playPrev, playNext, shuffle, setVideoCallback}) {
   const [description, setDescription] = useState(false);
   const [video, setVideo] = useState();
@@ -219,6 +343,9 @@ function PlayerController({playingCallback, playingRef, playerRef, loop, updateP
           <span className='text-sm font-light'>{video.channel}</span>
         </div>
       )}
+      {playerRef.current && (
+        <PlayerBar playerRef={playerRef}/>
+      )}
       <div className='flex flex-col'>
         <div className='flex'>
           {/* <DescriptionButton onClick={(newDescription) => setDescription(newDescription)}/> */}
@@ -236,11 +363,11 @@ function PlayerController({playingCallback, playingRef, playerRef, loop, updateP
           >
             <RiSkipBackFill className='w-7 h-7'/>
           </button>
-          <div className='flex-1 max-w-[1rem]'></div>
+          <div className='flex-1 max-w-[2rem]'></div>
           <PauseButton addPlayingListener={(callback) => playingCallback.current = callback}
             onClick={togglePlaying}
           />
-          <div className='flex-1 max-w-[1rem]'></div>
+          <div className='flex-1 max-w-[2rem]'></div>
           <button className='p-3 text-zinc-50 active:opacity-50 active:scale-95 duration-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
             onClick={playNext}
           >
@@ -341,8 +468,8 @@ function PlayerPage({playlist, updateQueue, videos}) {
   />, [queue, playerRef, updatePlayer])
 
   return (
-    <div className="w-full max-w-3xl space-y-8 mb-8">
-      <div>
+    <div className="w-full max-w-3xl space-y-8 mb-24">
+      {/* <div>
         <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-zinc-200">
           {playlist.title}
         </h2>
@@ -351,27 +478,36 @@ function PlayerPage({playlist, updateQueue, videos}) {
           <div className='px-2 text-sm text-zinc-500'>·</div>
           <div className='text-sm text-zinc-500'>{playlist.queue.length} videos</div>
         </div>
-      </div>
+      </div> */}
       <div className='flex flex-col gap-3'>
-        <div>
-          <div id='videoContainer' className='w-full aspect-video rounded-sm shadow-lg overflow-hidden group'>
-            {youtubePlayer}
+        <div className='h-screen flex flex-col justify-between pt-4 pb-16'>
+          <div className='px-6 sm:px-12 lg:px-16'>
+            <h2 className="mt-6 text-center text-md font-medium tracking-tight text-zinc-200">
+              {playlist.title}
+            </h2>
+          </div>
+          <div>
+            <div id='videoContainer' className='w-full aspect-video rounded-sm shadow-lg overflow-hidden group px-6 sm:px-12 lg:px-16'>
+              {youtubePlayer}
+            </div>
+          </div>
+          <div className='px-6 sm:px-12 lg:px-16'>
+            <PlayerController
+              playingCallback={playingCallback}
+              playingRef={playingRef}
+              playerRef={playerRef}
+              loop={loop}
+              updatePlayer={updatePlayer}
+              playPrev={playPrev}
+              playNext={playNext}
+              shuffle={() => shuffleQueue(queue.current)}
+              setVideoCallback={(callback) => {
+                videoCallback.current = callback;
+                videoCallback.current?.({...videos[queue.current[0]]});
+              }}
+            />
           </div>
         </div>
-        <PlayerController
-          playingCallback={playingCallback}
-          playingRef={playingRef}
-          playerRef={playerRef}
-          loop={loop}
-          updatePlayer={updatePlayer}
-          playPrev={playPrev}
-          playNext={playNext}
-          shuffle={() => shuffleQueue(queue.current)}
-          setVideoCallback={(callback) => {
-            videoCallback.current = callback;
-            videoCallback.current?.({...videos[queue.current[0]]});
-          }}
-        />
         <div>
           <PlaylistQueue videos={videos} initialQueue={queue.current}
             setQueueUpdateCallback={(callback) => queueUpdateCallback.current = callback}
@@ -469,7 +605,7 @@ function ImportPage({playlists, updatePlaylists}) {
     document.title = 'Import a playlist · Yuu';
   }, [])
   return (
-    <div className="w-full max-w-md space-y-8 mb-8">
+    <div className="w-full max-w-md py-12 px-6 sm:px-12 lg:px-16 space-y-8 mb-8">
       <div>
         <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-zinc-200">
           Import a playlist
@@ -556,7 +692,7 @@ function App() {
   }
 
   return (
-    <div className="flex flex-col min-h-full items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-zinc-950 selection:bg-red-600/80 selection:text-white">
+    <div className="flex flex-col min-h-full items-center justify-center bg-zinc-950 selection:bg-red-600/80 selection:text-white">
       <Routes>
         <Route path='/' element={<PlayerSwitcher key={'player'+playerCount} playlists={playlists.current} savePlaylists={savePlaylists} syncPlaylists={syncPlaylists}/>}></Route>
         <Route path='/play' element={<PlaylistLoadingPage playlists={playlists.current} savePlaylists={savePlaylists} syncPlaylists={syncPlaylists}/>}></Route>
