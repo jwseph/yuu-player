@@ -211,7 +211,7 @@ function PlayerBar({playerRef}) {
     endingDragging.current = false;
 
     dragging.current = false;
-    updateTimeDelay.current = 3;
+    updateTimeDelay.current = 5;
     console.log('finish')
   }
   async function whenDragging(e) {
@@ -219,14 +219,6 @@ function PlayerBar({playerRef}) {
     let newTime = await getIntendedTime(e);
     setTime(newTime);
     await playerRef.current.internalPlayer.seekTo(newTime, false);
-    // waitingTimeUpdate.current = true;
-    // setTimeout(() => waitingTimeUpdate.current = false, 500);
-    // if (dragging.current) setTime(newTime);
-    // if (!dragging.current) {
-    //   console.log(newTime, await playerRef.current.internalPlayer.getCurrentTime())
-    //   console.log('seeked to time');
-    //   wasDragging.current = false;
-    // }
   }
   function startDraggingTouch(e) {
     startDragging(e.changedTouches[0]);
@@ -336,7 +328,7 @@ function PlayerController({playingCallback, playingRef, playerRef, loop, updateP
     return () => document.removeEventListener('keydown', handleKeyPressed);
   })
   return (
-    <div className='py-5 space-y-5'>
+    <div className='py-5 space-y-10'>
       {video && (
         <div className='flex flex-col items-center space-y-1'>
           <h3 className='text-xl text-center font-semibold tracking-tight truncate max-w-full'>{video.title}</h3>
@@ -480,7 +472,7 @@ function PlayerPage({playlist, updateQueue, videos}) {
         </div>
       </div> */}
       <div className='flex flex-col gap-3'>
-        <div className='h-[100svh] flex flex-col justify-between pt-4 pb-16'>
+        <div className='h-[100svh] flex flex-col justify-between pt-4 pb-24'>
           <div className='px-6 sm:px-12 lg:px-16'>
             <h2 className="mt-6 text-center text-md font-medium tracking-tight text-zinc-200">
               {playlist.title}
