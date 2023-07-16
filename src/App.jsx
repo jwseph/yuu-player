@@ -690,12 +690,12 @@ function ImportPage({playlists, updatePlaylists}) {
         <div className="-space-y-1 rounded-sm shadow-lg">
           <div>
             <label htmlFor="playlistUrl" className="sr-only">Enter a playlist URL</label>
-            <input onChange={e => setPlaylistUrl(e.target.value.trim())} id="playlistUrl" name="playlistUrl" type="text" autoComplete="off" className="relative block w-full rounded-md border-0 py-1.5 text-zinc-200 ring-1 ring-inset ring-zinc-800 placeholder:text-zinc-500 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-red-600 text-sm shadow-sm leading-6 px-3 bg-zinc-950" placeholder='Enter a playlist URL'/>
+            <input onChange={e => setPlaylistUrl(e.target.value.trim())} id="playlistUrl" name="playlistUrl" type="text" autoComplete="off" className="relative block w-full rounded-md border-0 py-1.5 bg-zinc-900 text-zinc-200 ring-1 ring-inset ring-zinc-700 placeholder:text-zinc-500 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-red-600 text-sm shadow-sm leading-6 px-3" placeholder='Enter a playlist URL'/>
           </div>
         </div>
         <div className='flex gap-6'>
           <div className='flex-1'>
-            <button className="relative flex w-full justify-center rounded-md bg-red-700 py-2 px-3 text-sm font-medium text-red-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 shadow-md active:opacity-50 active:scale-95 duration-100 ease-in-out"
+            <button className="relative flex w-full justify-center rounded-md bg-red-700 py-2 px-3 text-sm font-medium text-red-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 active:opacity-50 active:scale-95 duration-100 ease-in-out"
               onClick={async () => {
                 let playlistId = getPlaylistId(playlistUrl);
                 fetch(BASE+'import?playlist_id='+playlistId, {method: 'POST'});
@@ -714,7 +714,7 @@ function ImportPage({playlists, updatePlaylists}) {
             </div>
           </div>
           <div className='flex-1'>
-            <button className="relative flex w-full justify-center rounded-md bg-zinc-800 py-2 px-3 text-sm font-medium text-zinc-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 shadow-md active:opacity-50 active:scale-95 duration-100 ease-in-out"
+            <button className="relative flex w-full justify-center rounded-md bg-zinc-800 py-2 px-3 text-sm font-medium text-zinc-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 active:opacity-50 active:scale-95 duration-100 ease-in-out"
               onClick={async () => {
                 let playlistId = getPlaylistId(playlistUrl);
                 fetch(BASE+'update?playlist_id='+playlistId, {method: 'POST'});
