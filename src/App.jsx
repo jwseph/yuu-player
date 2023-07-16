@@ -102,7 +102,7 @@ function PlaylistQueue({initialQueue, videos, onClick, setQueueUpdateCallback}) 
       {queue.slice(0, 70).map((videoId, i) => {
         let video = videos[videoId];
         return (
-          <button key={videoId} className='shadow-md bg-zinc-950 active:opacity-50 duration-100 mb-px last:mb-0 py-2 px-6 sm:px-12 lg:px-16 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 focus-visible:z-10 last:rounded-b-sm first:rounded-t-sm'
+          <button key={videoId} className='shadow-md bg-zinc-950 active:opacity-50 duration-100 ease-in-out mb-px last:mb-0 py-2 px-6 sm:px-12 lg:px-16 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 focus-visible:z-10 last:rounded-b-sm first:rounded-t-sm'
             onClick={() => onClick(i)}
           >
             <div className='flex items-center space-x-3'>
@@ -143,7 +143,7 @@ function PauseButton({addPlayingListener, onClick}) {
 function LoopOneButton({onClick}) {
   const [loop, setLoop] = useState(false)
   return (
-    <button className='p-3 -mr-3 text-zinc-50 active:opacity-50 active:scale-95 duration-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
+    <button className='p-3 -mr-3 text-zinc-50 active:opacity-50 active:scale-95 duration-100 ease-in-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
       onClick={() => {
         onClick(!loop);
         setLoop(!loop);
@@ -186,7 +186,6 @@ function PlayerBar({playerRef}) {
     const player = playerRef.current.internalPlayer;
     let state = await player.getPlayerState();
     if (state != 1 && state != 2) return;
-    console.log(dragging.current, await playerRef.current.internalPlayer.getCurrentTime());
     setTime(await playerRef.current.internalPlayer.getCurrentTime());
   }
   async function getIntendedTime(e) {
@@ -203,7 +202,6 @@ function PlayerBar({playerRef}) {
     whenDragging(e);
   }
   async function stopDragging(e) {
-    console.log('MOUSEUP');
     if (!dragging.current || endingDragging.current) return;
 
     endingDragging.current = true;
@@ -212,7 +210,6 @@ function PlayerBar({playerRef}) {
 
     dragging.current = false;
     updateTimeDelay.current = 5;
-    console.log('finish')
   }
   async function whenDragging(e) {
     if (!dragging.current || endingDragging.current) return;
@@ -224,7 +221,6 @@ function PlayerBar({playerRef}) {
     startDragging(e.changedTouches[0]);
   }
   async function stopDraggingTouch(e) {
-    console.log('TOUCH UP', e)
     await stopDragging(e.changedTouches[0]);
   }
   async function whenDraggingTouch(e) {
@@ -328,11 +324,11 @@ function PlayerController({playingCallback, playingRef, playerRef, loop, updateP
     return () => document.removeEventListener('keydown', handleKeyPressed);
   })
   return (
-    <div className='py-5 space-y-3'>
+    <div className='py-5 space-y-4'>
       {video && (
-        <div className='flex flex-col items-center space-y-1 pb-2'>
-          <h3 className='text-xl text-center font-semibold tracking-tight truncate max-w-full'>{video.title}</h3>
-          <span className='text-sm font-light'>{video.channel}</span>
+        <div className='flex flex-col space-y-1 pb-2'>
+          <h2 className='text-2xl font-semibold tracking-tight truncate max-w-full'>{video.title}</h2>
+          <span className='text-md font-light'>{video.channel}</span>
         </div>
       )}
       {playerRef.current && (
@@ -341,7 +337,7 @@ function PlayerController({playingCallback, playingRef, playerRef, loop, updateP
       <div className='flex flex-col'>
         <div className='flex'>
           {/* <DescriptionButton onClick={(newDescription) => setDescription(newDescription)}/> */}
-          <button className='p-3 -ml-3 text-zinc-50 active:opacity-50 active:scale-95 duration-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
+          <button className='p-3 -ml-3 text-zinc-50 active:opacity-50 active:scale-95 duration-100 ease-in-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
             onClick={async () => {
               shuffle();
               updatePlayer();
@@ -350,22 +346,24 @@ function PlayerController({playingCallback, playingRef, playerRef, loop, updateP
             <RiShuffleFill className='w-5 h-5'/>
           </button>
           <div className='flex-1'></div>
-          <button className='p-3 text-zinc-50 active:opacity-50 active:scale-95 duration-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
+          <button className='group flex flex-row-reverse items-center justify-center p-3 select-none text-zinc-50 active:scale-95 duration-100 ease-in-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
             onClick={playPrev}
           >
-            <RiSkipBackFill className='w-9 h-9'/>
-            <img className='absolute scale-100' src={getPrev().thumbnails.small}/>
+            <img className='w-16 scale-150 aspect-video opacity-20 group-active:opacity-100 duration-100 ease-in-out rounded-sm' src={getPrev().thumbnails.small}/>
+            <RiSkipBackFill className='absolute w-9 h-9 z-10 group-active:opacity-0 duration-100 ease-in-out'/>
           </button>
-          <div className='flex-1 max-w-[2rem]'></div>
-          <PauseButton addPlayingListener={(callback) => playingCallback.current = callback}
-            onClick={togglePlaying}
-          />
-          <div className='flex-1 max-w-[2rem]'></div>
-          <button className='p-3 text-zinc-50 active:opacity-50 active:scale-95 duration-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
+          <div className='flex-1 max-w-[3rem]'></div>
+          <div>
+            <PauseButton addPlayingListener={(callback) => playingCallback.current = callback}
+              onClick={togglePlaying}
+            />
+          </div>
+          <div className='flex-1 max-w-[3rem]'></div>
+          <button className='group flex items-center justify-center p-3 select-none text-zinc-50 active:scale-95 duration-100 ease-in-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
             onClick={playNext}
           >
-            <RiSkipForwardFill className='w-9 h-9'/>
-            <img src={getNext().thumbnails.small}/>
+            <img className='w-16 scale-150 aspect-video opacity-20 group-active:opacity-100 duration-100 ease-in-out rounded-sm' src={getNext().thumbnails.small}/>
+            <RiSkipForwardFill className='absolute w-9 h-9 z-10 group-active:opacity-0 duration-100 ease-in-out'/>
           </button>
           <div className='flex-1'></div>
           <LoopOneButton onClick={(newLoop) => loop.current = newLoop}/>
@@ -476,10 +474,13 @@ function PlayerPage({playlist, updateQueue, videos}) {
         </div>
       </div> */}
       <div className='flex flex-col gap-3'>
-        <div className='min-h-[100svh] flex flex-col justify-between pt-4 pb-24'>
+        <div className='min-h-[100svh] flex flex-col justify-between pt-20 pb-24'>
           <div className='px-6 sm:px-12 lg:px-16'>
-            <h2 className="mt-6 text-center text-md font-medium tracking-tight text-zinc-200">
+            <h2 className="text-center text-sm font-semibold tracking-tight text-zinc-200">
               {playlist.title}
+            </h2>
+            <h2 className="text-center text-sm font-light text-zinc-200">
+              {playlist.channel}
             </h2>
           </div>
           <div className='px-6 sm:px-12 lg:px-16'>
@@ -568,7 +569,6 @@ function PlaylistLoadingPage({playlists, savePlaylists, syncPlaylists}) {
       if (!(playlistId in playlists)) await prom;
 
       setPlaylist(playlists[playlistId]);
-      console.log('loaded', playlistId);
       loading.current = false;
       setProgress(100);
     }
@@ -576,7 +576,6 @@ function PlaylistLoadingPage({playlists, savePlaylists, syncPlaylists}) {
       loading.current = true;
       loadPlaylist();
     }
-    console.log('rerender');
   }, [playlist, videos]);
 
   return (
