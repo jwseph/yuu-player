@@ -535,8 +535,8 @@ function PlayerPage({playlist, updateQueue, videos, changePlayerCount, playlistI
                       {playlist.channel}
                     </h2>
                   </div>
-                  <a target='_blank' href={`https://www.youtube.com/watch?v=${getVideoId(video.video_url)}&list=${playlistId}`} className='p-3 -mr-3 active:opacity-50 active:scale-95 duration-100 ease-in-out'>
-                    <RiExternalLinkLine className='w-7 h-7'/>
+                  <a target='_blank' href={`https://www.youtube.com/watch?v=${getVideoId(video.video_url)}&list=${playlistId}`} className='w-10 h-10 -mr-3 flex justify-center items-center active:opacity-50 active:scale-95 duration-100 ease-in-out'>
+                    <RiExternalLinkLine className='w-5 h-5'/>
                   </a>
                 </div>
                 <div className='px-6 sm:px-6 lg:px-6'>
