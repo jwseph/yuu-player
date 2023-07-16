@@ -3,15 +3,26 @@
 }
 * {
   outline: none;
+  -webkit-tap-highlight-color: transparent;
 }
-html, body, #root {
+html {
+  /* min-height: 100%;
+  position: relative; */
+  height: 100%;
+}
+body, #root {
   height: 100%;
 }
 iframe, #videoContainer > * {
   width: 100%;
   height: 100%;
 }
-img {
+.clearfix:after {
+  content: '';
+  display: table;
+  clear: both;
+}
+img, a {
   -webkit-user-drag: none;
   -khtml-user-drag: none;
   -moz-user-drag: none;
