@@ -118,6 +118,7 @@ function PlaylistQueue({initialQueue, videos, onClick, setQueueUpdateCallback}) 
     <div className='flex flex-col'>
       {queue.slice(0, 70).map((videoId, i) => {
         let video = videos[videoId];
+        if (i == 0) return;
         return (
           <button key={videoId} className='active:opacity-50 duration-100 ease-in-out mb-px last:mb-0 py-4 px-6 sm:px-6 lg:px-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 focus-visible:z-10 last:rounded-b-sm first:rounded-t-sm'
             onClick={() => onClick(i)}
@@ -136,7 +137,7 @@ function PlaylistQueue({initialQueue, videos, onClick, setQueueUpdateCallback}) 
           </button>
         )
       })}
-      <div className='text-center text-xs font-medium tracking-tight pt-6 text-zinc-500'>Showing {queue.slice(0, 70).length} of {queue.length}</div>
+      <div className='text-center text-xs font-medium tracking-tight pt-6 text-zinc-500'>Showing 1 - {queue.slice(0, 70).length} of {queue.length}</div>
     </div>
   )
 }
