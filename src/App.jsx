@@ -86,9 +86,9 @@ function SelectPlaylistPage({playlists, syncPlaylists, setPlaylist, changePlayer
                   <div className="absolute inset-0 bg-cover bg-center z-0 duration-200 ease-in-out" style={{backgroundImage: 'url('+playlist.thumbnails.small+')'}}></div>
                 </div>
                 <div className='flex flex-col flex-1 items-start'>
-                  <h3 className='text-lg text-zinc-200 font-bold text-left leading-tight'>{playlist.title}</h3>
+                  <h3 className='text-lg text-zinc-200 font-semibold tracking-tighter text-left leading-tight'>{playlist.title}</h3>
                   <div className='flex flex-wrap pt-1'>
-                    <div className='text-sm text-zinc-400 font-medium'>{playlist.channel}</div>
+                    <div className='text-sm text-zinc-400 font-medium tracking-tight'>{playlist.channel}</div>
                     <div className='px-2 text-sm text-zinc-500'>·</div>
                     {!playlist.queue ? (
                       <div className='text-sm text-zinc-500'>Importing videos...</div>
