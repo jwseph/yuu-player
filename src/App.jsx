@@ -37,7 +37,7 @@ function SelectPlaylistPage({playlists, syncPlaylists, setPlaylist}) {
   }, [])
 
   return (
-    <div className="w-full max-w-3xl py-12 px-6 sm:px-12 lg:px-16 space-y-8 mb-8">
+    <div className="w-full max-w-3xl py-12 px-6 sm:px-6 lg:px-6 space-y-8 mb-8">
       <div>
         <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-zinc-200">
           Select a playlist
@@ -98,11 +98,11 @@ function PlaylistQueue({initialQueue, videos, onClick, setQueueUpdateCallback}) 
     setQueueUpdateCallback((queue) => setQueue([...queue]));
   }, [queue, setQueue]);
   return (
-    <div className='flex flex-col bg-zinc-800'>
+    <div className='flex flex-col '>
       {queue.slice(0, 70).map((videoId, i) => {
         let video = videos[videoId];
         return (
-          <button key={videoId} className='shadow-md bg-zinc-950 active:opacity-50 duration-100 ease-in-out mb-px last:mb-0 py-2 px-6 sm:px-12 lg:px-16 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 focus-visible:z-10 last:rounded-b-sm first:rounded-t-sm'
+          <button key={videoId} className='bg-zinc-950 active:opacity-50 duration-100 ease-in-out mb-px last:mb-0 py-2.5 px-6 sm:px-6 lg:px-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 focus-visible:z-10 last:rounded-b-sm first:rounded-t-sm'
             onClick={() => onClick(i)}
           >
             <div className='flex items-center space-x-3'>
@@ -114,7 +114,7 @@ function PlaylistQueue({initialQueue, videos, onClick, setQueueUpdateCallback}) 
                 <h1 className='truncate text-xs text-left flex-1 font-semibold text-zinc-300'>{video.title}</h1>
                 <span className='truncate text-xs text-left text-zinc-500'>{video.channel}</span>
               </div>
-              <div className='pl-2 text-xs text-zinc-700 text-left'>{i || '#'}</div>
+              <div className='pl-2 text-xs text-zinc-700 text-left'>{i || '·'}</div>
             </div>
           </button>
         )
@@ -475,7 +475,7 @@ function PlayerPage({playlist, updateQueue, videos}) {
       </div> */}
       <div className='flex flex-col gap-3'>
         <div className='min-h-[100svh] flex flex-col justify-between pt-20 pb-24'>
-          <div className='px-6 sm:px-12 lg:px-16'>
+          <div className='px-6 sm:px-6 lg:px-6'>
             <h2 className="text-center text-sm font-semibold tracking-tight text-zinc-200">
               {playlist.title}
             </h2>
@@ -483,12 +483,12 @@ function PlayerPage({playlist, updateQueue, videos}) {
               {playlist.channel}
             </h2>
           </div>
-          <div className='px-6 sm:px-12 lg:px-16'>
+          <div className='px-6 sm:px-6 lg:px-6'>
             <div id='videoContainer' className='w-full aspect-video rounded-sm shadow-lg overflow-hidden group'>
               {youtubePlayer}
             </div>
           </div>
-          <div className='px-6 sm:px-12 lg:px-16'>
+          <div className='px-6 sm:px-6 lg:px-6'>
             <PlayerController
               playingCallback={playingCallback}
               playingRef={playingRef}
@@ -602,7 +602,7 @@ function ImportPage({playlists, updatePlaylists}) {
     document.title = 'Import a playlist · Yuu';
   }, [])
   return (
-    <div className="w-full max-w-md py-12 px-6 sm:px-12 lg:px-16 space-y-8 mb-8">
+    <div className="w-full max-w-md py-12 px-6 sm:px-6 lg:px-6 space-y-8 mb-8">
       <div>
         <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-zinc-200">
           Import a playlist
