@@ -23,6 +23,7 @@ const shuffleQueue = (queue) => {
 }
 
 const updatePlaylistInfo = async (playlists, updatePlaylists, playlistId) => {
+  console.log(BASE+'get_playlist_info?playlist_id='+playlistId)
   let resp = await fetch(BASE+'get_playlist_info?playlist_id='+playlistId);
   let playlist = await resp.json();
   playlists[playlistId] = {...playlists[playlistId] || {}, ...playlist};
@@ -66,12 +67,11 @@ function SelectPlaylistPage({playlists, syncPlaylists, setPlaylist, changePlayer
         </Link>
       </div>
       {!Object.keys(playlists).length ? (
-        <div className='text-center text-md text-zinc-500 flex flex-wrap justify-center gap-1'>
-          <div>You don't have any saved playlists.</div>
-          <Link to='/import' className='text-zinc-200 hover:text-zinc-50 font-medium underline underline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'>Import a playlist</Link>
+        <div className='text-center text-sm text-zinc-400 flex flex-wrap justify-center gap-1'>
+          Import a playlist to get started (+)
         </div>
       ) : (
-        <div className='flex flex-col gap-2'>
+        <div className='flex flex-col gap-3'>
           {Object.keys(playlists).map(playlistId => {
             let playlist = playlists[playlistId];
             return (
@@ -120,7 +120,7 @@ function PlaylistQueue({initialQueue, videos, onClick, setQueueUpdateCallback}) 
         let video = videos[videoId];
         if (i == 0) return;
         return (
-          <button key={videoId} className='active:opacity-50 duration-100 ease-in-out mb-px last:mb-0 py-4 px-6 sm:px-6 lg:px-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 focus-visible:z-10 last:rounded-b-sm first:rounded-t-sm'
+          <button key={videoId} className='active:opacity-50 active:scale-95 duration-100 ease-in-out mb-px last:mb-0 py-4 px-6 sm:px-6 lg:px-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 focus-visible:z-10 last:rounded-b-sm first:rounded-t-sm'
             onClick={() => onClick(i)}
           >
             <div className='flex items-center space-x-3'>
@@ -279,18 +279,20 @@ function PlayerBar({playerRef}) {
     }
   }, [])
   return (
-    <div>
+    <div className='select-none'>
       <div
         id='PlayerBar'
-        className='w-full h-6 select-none flex items-center cursor-pointer touch-none'
+        className='w-full h-6 flex items-center cursor-pointer touch-none'
         onMouseDown={(e) => startDragging(e.nativeEvent)}
         onTouchStart={(e) => startDraggingTouch(e.nativeEvent)}
       >
         <div
-          className='w-full h-1 bg-zinc-50/20 rounded-full flex items-center'
+          className='w-full h-1 bg-zinc-50/20 rounded-full'
         >
-          <div className='h-1 bg-zinc-50 rounded-full' style={{width: time/duration*100+'%'}}></div>
-          <div className={'rounded-full bg-zinc-50 duration-75 ease-in-out'+(!dragging.current || endingDragging.current ? ' w-3 h-3 -ml-1.5' : ' w-4 h-4 -ml-2')}></div>
+          <div className='w-full h-full flex items-center'>
+            <div className='h-1 bg-zinc-50 rounded-full' style={{width: time/duration*100+'%'}}></div>
+            <div className={'rounded-full bg-zinc-50 duration-75 ease-in-out'+(!dragging.current || endingDragging.current ? ' w-3 h-3 -ml-1.5' : ' w-4 h-4 -ml-2')}></div>
+          </div>
         </div>
       </div>
       <div className='w-full flex justify-between'>
@@ -687,8 +689,8 @@ function ImportPage({playlists, updatePlaylists}) {
       <form className="mt-8 space-y-8" onSubmit={e => e.preventDefault()}>
         <div className="-space-y-1 rounded-sm shadow-lg">
           <div>
-            <label htmlFor="playlistUrl" className="sr-only">Enter a playlist url</label>
-            <input onChange={e => setPlaylistUrl(e.target.value.trim())} id="playlistUrl" name="playlistUrl" type="text" autoComplete="off" className="relative block w-full rounded-md border-0 py-1.5 text-zinc-200 ring-1 ring-inset ring-zinc-800 placeholder:text-zinc-500 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-red-600 text-sm leading-6 px-3 bg-zinc-950" placeholder='Enter a playlist url'/>
+            <label htmlFor="playlistUrl" className="sr-only">Enter a playlist URL</label>
+            <input onChange={e => setPlaylistUrl(e.target.value.trim())} id="playlistUrl" name="playlistUrl" type="text" autoComplete="off" className="relative block w-full rounded-md border-0 py-1.5 text-zinc-200 ring-1 ring-inset ring-zinc-800 placeholder:text-zinc-500 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-red-600 text-sm shadow-sm leading-6 px-3 bg-zinc-950" placeholder='Enter a playlist URL'/>
           </div>
         </div>
         <div className='flex gap-6'>
@@ -700,7 +702,7 @@ function ImportPage({playlists, updatePlaylists}) {
                 await updatePlaylistInfo(playlists, updatePlaylists, playlistId);
               }}
             >
-              Import
+              New playlist
             </button>
             <div className='py-2 space-y-1'>
               <p className='md:px-4 text-sm text-zinc-500'>
@@ -719,7 +721,7 @@ function ImportPage({playlists, updatePlaylists}) {
                 await updatePlaylistInfo(playlists, updatePlaylists, playlistId);
               }}
             >
-              Update
+              Update playlist
             </button>
             <p className='md:px-4 py-2 text-sm text-zinc-500'>
               Choose this option if you have imported the playlist before (on any device)
@@ -781,7 +783,7 @@ function App() {
   }
 
   return (
-    <div className="flex flex-col min-h-full items-center justify-center bg-zinc-950 selection:bg-[#ff0000af] selection:text-white">
+    <div className="flex flex-col min-h-full items-center justify-center bg-zinc-950 selection:bg-red-700/90 selection:text-red-100">
       <Routes>
         <Route path='/' element={<PlayerSwitcher key={'player'+playerCount} playlists={playlists.current} savePlaylists={savePlaylists} syncPlaylists={syncPlaylists} changePlayerCount={changePlayerCount}/>}></Route>
         <Route path='/play' element={<PlaylistLoadingPage playlists={playlists.current} savePlaylists={savePlaylists} syncPlaylists={syncPlaylists} changePlayerCount={changePlayerCount}/>}></Route>
