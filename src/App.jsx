@@ -682,29 +682,6 @@ function ImportPage({playlists, updatePlaylists}) {
         <a href='https://github.com/jwseph/youtube-player' className='invisible p-3 -mr-3 active:opacity-50 active:scale-95 duration-100 ease-in-out'>
           <RiGithubLine className='w-7 h-7'/>
         </a>
-        
-{/*         
-        <Link to='/' className='p-3 -ml-3 active:opacity-50 active:scale-95 duration-100 ease-in-out' onClick={changePlayerCount}>
-          <RiArrowDownSLine className='w-7 h-7'/>
-        </Link>
-        <div>
-          <h2 className="text-center text-sm font-semibold tracking-tight">
-            {playlist.title}
-          </h2>
-          <h2 className="text-center text-sm font-light">
-            {playlist.channel}
-          </h2>
-        </div>
-        <Link to='#' className='p-3 -mr-3 active:opacity-50 active:scale-95 duration-100 ease-in-out'>
-          <RiMoreLine className='w-7 h-7'/>
-        </Link>
-        <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-zinc-200">
-          Import a playlist
-        </h2>
-        <p className="mt-2 text-center text-sm text-zinc-500">
-          Download playlist informaton from Youtube for remote playback.<br/>
-          The playlist must be public, and you don't need to import the entire playlist if you've already imported it on another device.
-        </p> */}
       </div>
       <form className="mt-8 space-y-8" onSubmit={e => e.preventDefault()}>
         <div className="-space-y-1 rounded-sm shadow-lg">
@@ -715,7 +692,7 @@ function ImportPage({playlists, updatePlaylists}) {
         </div>
         <div className='flex gap-6'>
           <div className='flex-1'>
-            <button className="group relative flex w-full justify-center rounded-md bg-red-700 py-2 px-3 text-sm font-medium text-red-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 shadow-md active:opacity-50 active:scale-95 duration-100 ease-in-out"
+            <button className="relative flex w-full justify-center rounded-md bg-red-700 py-2 px-3 text-sm font-medium text-red-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 shadow-md active:opacity-50 active:scale-95 duration-100 ease-in-out"
               onClick={async () => {
                 let playlistId = getPlaylistId(playlistUrl);
                 fetch(BASE+'import?playlist_id='+playlistId, {method: 'POST'});
@@ -734,7 +711,7 @@ function ImportPage({playlists, updatePlaylists}) {
             </div>
           </div>
           <div className='flex-1'>
-            <button className="group relative flex w-full justify-center rounded-md bg-zinc-900 py-2 px-3 text-sm font-medium text-zinc-400 hover:bg-zinc-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 shadow-md active:opacity-50 active:scale-95 duration-100 ease-in-out"
+            <button className="relative flex w-full justify-center rounded-md bg-zinc-800 py-2 px-3 text-sm font-medium text-zinc-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 shadow-md active:opacity-50 active:scale-95 duration-100 ease-in-out"
               onClick={async () => {
                 let playlistId = getPlaylistId(playlistUrl);
                 fetch(BASE+'update?playlist_id='+playlistId, {method: 'POST'});
