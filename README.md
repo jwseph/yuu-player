@@ -12,9 +12,9 @@ A YouTube playlist player made with React and Tailwind
   - Chrome on iOS
   - Firefox + desktop mode on Android
 
-## Future features (Todo)
-- Make usage more intuitive and streamlined for new users
-  - Combine "import" and "update" options
+## Todo
+- Fix importing to not rely on polling
+- Combine "import" and "update" options
 - Improve queue-rendering speed (currently only shows top 70 videos to avoid lag)
 
 ## Known bugs
