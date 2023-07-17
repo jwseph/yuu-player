@@ -154,7 +154,7 @@ function PauseButton({addPlayingListener, onClick, color}) {
         setPlaying(!playing);
         await onClick();
       }}
-      style={{'--darkIconColor': blendColors('#18181b', color, 0.26)}}
+      style={{'--darkIconColor': blendColors('#18181b', color, 0.11)}}
     >
       {!playing ? <RiPlayFill className='w-9 h-9 duration-1000 ease-in-out'/> : <RiPauseFill className='w-9 h-9 duration-1000 ease-in-out'/>}
     </button>
@@ -518,7 +518,7 @@ function PlayerPage({playlist, updateQueue, videos, changePlayerCount, playlistI
       <div className="w-full space-y-8 text-zinc-50">
         <div className='flex flex-col' style={{'--accentColor': color}}>
           <div className='bg-[var(--accentColor)] duration-1000 ease-in-out shadow-sm'>
-            <div className='min-h-[100svh] flex flex-col items-center bg-gradient-to-br from-zinc-900/30 to-zinc-900/80 duration-1000 ease-in-out'>
+            <div className='min-h-[100svh] flex flex-col items-center bg-gradient-to-b from-zinc-900/30 to-zinc-900/80 duration-1000 ease-in-out'>
               {/* <BackgroundGradient
                 setVideoCallback={(callback) => {
                   videoCallback2.current = callback;
@@ -704,11 +704,11 @@ function ImportPage({playlists, updatePlaylists}) {
             >
               New playlist
             </button>
-            <div className='py-2 space-y-1'>
-              <p className='md:px-4 text-sm text-zinc-500'>
+            <div className='py-3 space-y-2'>
+              <p className='md:px-4 text-xs text-zinc-500'>
                 Choose this option if this is your first time using this playlist with Yuu (on any device)
               </p>
-              <p className='md:px-4 text-sm text-zinc-500'>
+              <p className='md:px-4 text-xs text-zinc-500'>
                 The playlist must be public.
               </p>
             </div>
@@ -723,7 +723,7 @@ function ImportPage({playlists, updatePlaylists}) {
             >
               Update playlist
             </button>
-            <p className='md:px-4 py-2 text-sm text-zinc-500'>
+            <p className='md:px-4 py-3 text-xs text-zinc-500'>
               Choose this option if you have imported the playlist before (on any device)
             </p>
           </div>
