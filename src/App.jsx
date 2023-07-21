@@ -10,7 +10,10 @@ import { io } from 'socket.io-client'
 
 const BASE = 'https://kamiak-io.fly.dev/yuu/'
 
+const classNames = (...classes) => classes.filter(Boolean).join(' ');
+
 const getPlaylistId = (url) => new URL(url).searchParams.get('list');
+
 const getVideoId = (url) => {
   let parts = url.split('/');
   return parts[parts.length-1];
@@ -21,6 +24,7 @@ const shuffleQueue = (queue) => {
     const j = Math.random()*(i+1)|0;
     [queue[i], queue[j]] = [queue[j], queue[i]];
   }
+  return queue;
 }
 
 const updatePlaylistInfo = async (playlists, updatePlaylists, playlistId) => {
@@ -106,30 +110,37 @@ function SelectPlaylistPage({playlists, syncPlaylists, setPlaylist}) {
   )
 }
 
-function PlaylistQueue({initialQueue, videos, onClick, setQueueUpdateCallback}) {
-  const [queue, setQueue] = useState(initialQueue);
-  useEffect(() => {
-    setQueueUpdateCallback((queue) => setQueue([...queue]));
-  }, [queue, setQueue]);
+function PlaylistQueue({queue, videos, index, onClick}) {
   return (
     <div className='flex flex-col'>
-      {queue.slice(0, 70).map((videoId, i) => {
+      {queue.slice(0, 1000).map((videoId, i) => {
         let video = videos[videoId];
-        if (i == 0) return;
         return (
-          <button key={videoId} className='active:opacity-50 active:scale-95 duration-100 ease-in-out mb-px last:mb-0 py-4 px-6 sm:px-6 lg:px-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 focus-visible:z-10 last:rounded-b-sm first:rounded-t-sm'
+          <button key={videoId}
+            className={classNames(
+              'active:opacity-50 active:scale-95 duration-100 ease-in-out mb-px last:mb-0 py-4 px-6 sm:px-6 lg:px-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 focus-visible:z-10 rounded-none sm:rounded-md lg:rounded-md',
+              index == i ? 'bg-zinc-900' : 'bg-zinc-950',
+            )}
             onClick={() => onClick(i)}
           >
             <div className='flex items-center space-x-3'>
-              <LazyLoadImage
-                className='h-7 aspect-video rounded-sm'
-                src={video.thumbnails.small}
-              />
+              <div className='relative'>
+                <div className={classNames(
+                  'absolute bg-zinc-900/60 w-full h-full flex items-center justify-center duration-100',
+                  index == i ? 'opacity-100' : 'opacity-0',
+                )}>
+                  <RiPlayFill className='w-6 h-6 text-zinc-50'/>
+                </div>
+                <LazyLoadImage
+                  className='h-7 aspect-video rounded-sm'
+                  src={video.thumbnails.small}
+                />
+              </div>
               <div className='inline-flex flex-col flex-1 truncate'>
                 <h1 className='truncate text-xs text-left flex-1 font-semibold text-zinc-300'>{video.title}</h1>
                 <span className='truncate text-xs text-left text-zinc-500'>{video.channel}</span>
               </div>
-              <div className='pl-2 text-xs text-zinc-700 text-left'>{i || '-'}</div>
+              <div className='pl-2 text-xs text-zinc-500 text-left'>{i+1}</div>
             </div>
           </button>
         )
@@ -300,15 +311,11 @@ function PlayerBar({playerRef}) {
   )
 }
 
-function PlayerController({playingCallback, playingRef, playerRef, loop, updatePlayer, playPrev, playNext, getPrev, getNext, shuffle, setVideoCallback, color}) {
+function PlayerController({video, playingCallback, playingRef, playerRef, loop, playPrev, playNext, getPrev, getNext, shuffle, color}) {
   const [description, setDescription] = useState(false);
-  const [video, setVideo] = useState();
   const [channelImage, setChannelImage] = useState();
   const [channelSubscribers, setChannelSubscribers] = useState('');
   const URL_REGEX = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/;
-  useEffect(() => {
-    setVideoCallback(setVideo);
-  }, []);
   // useEffect(() => {
   //   (async () => {
   //     if (!video) return;
@@ -358,10 +365,7 @@ function PlayerController({playingCallback, playingRef, playerRef, loop, updateP
         <div className='flex'>
           {/* <DescriptionButton onClick={(newDescription) => setDescription(newDescription)}/> */}
           <button className='p-3 -ml-3 text-zinc-50 active:opacity-50 active:scale-95 duration-100 ease-in-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
-            onClick={async () => {
-              shuffle();
-              updatePlayer();
-            }}
+            onClick={shuffle}
           >
             <RiShuffleFill className='w-5 h-5'/>
           </button>
@@ -426,51 +430,39 @@ function PlayerController({playingCallback, playingRef, playerRef, loop, updateP
   )
 }
 
-function PlayerPage({playlist, updateQueue, videos, changePlayerCount, playlistId}) {
-  const queue = useRef(playlist.queue);
+function PlayerPage({playlist, updatePlaylistLocalStorage, videos, changePlayerCount, playlistId}) {
+  const [queue, setQueue] = useState([...playlist.queue]);
+  const [index, setIndex] = useState(playlist.index);
+  const [video, setVideo] = useState({...videos[queue[index]]});
+  const [color, setColor] = useState('#18181b');
   const playerRef = useRef(null);
   const playingRef = useRef(false);
   const playingCallback = useRef();
-  const queueUpdateCallback = useRef();
-  const videoCallback = useRef();
-  const videoCallback2 = useRef();
   const previousStates = useRef([-2, -2, -2]);
   const loop = useRef(false);
-  const [video, setVideo] = useState({...videos[queue.current[0]]});
-  const [color, setColor] = useState('#18181b');
   useEffect(() => {
-    window.scrollTo(0, 0)
+    window.scrollTo(0, 0);
   }, [])
   useEffect(() => {
-    setTitle();
-  }, [playlist]);
-  function setTitle() {
-    document.title = `${playlist.title} · ${videos[queue.current[0]].title} · Yuu`;
-  }
-  function updatePlayer() {
-    playerRef.current.internalPlayer.loadVideoById(queue.current[0]);
-    setTitle();
-    updateQueue(queue.current);
-    queueUpdateCallback.current(queue.current);
-    videoCallback.current?.({...videos[queue.current[0]]});
-    videoCallback2.current?.({...videos[queue.current[0]]});
-    setVideo({...videos[queue.current[0]]});
-  }
-  function seekTo(i) {
-    const newQueue = [];
-    for (let j = 0; j < queue.current.length; j++) {
-      newQueue.push(queue.current[(i+j)%queue.current.length]);
-    }
-    queue.current = newQueue;
-    updatePlayer();
-  }
+    updatePlaylistLocalStorage(queue, index);
+    setVideo({...videos[queue[index]]});
+    playerRef.current.internalPlayer.loadVideoById(queue[index]);
+  }, [queue, index])
+  useEffect(() => {
+    document.title = `${playlist.title} · ${videos[queue[index]].title} · Yuu`;
+  }, [video])
+  const wrapIndex = (i) => (i+queue.length)%queue.length;
   const playCurr = () => playerRef.current.internalPlayer.playVideo();
-  const playNext = () => seekTo(1);
-  const playPrev = () => seekTo(queue.current.length-1);
-  const getNext = () => videos[queue.current[1]];
-  const getPrev = () => videos[queue.current[queue.current.length-1]];
+  const playNext = () => setIndex(wrapIndex(index+1));
+  const playPrev = () => setIndex(wrapIndex(index-1));
+  const getNext = () => videos[queue[wrapIndex(index+1)]];
+  const getPrev = () => videos[queue[wrapIndex(index-1)]];
+  const shuffle = () => {
+    setQueue([...shuffleQueue(queue)]);
+    setIndex(0);
+  }
   const youtubePlayer = useMemo(() => 
-  <YouTube videoId={queue.current[0]}
+  <YouTube videoId={queue[index]}
     opts={{
       host: 'https://www.youtube-nocookie.com',
       playerVars: {autoplay: 1, origin: location.origin},
@@ -506,22 +498,10 @@ function PlayerPage({playlist, updateQueue, videos, changePlayerCount, playlistI
 
   return (
     <div className='w-full flex flex-col items-center'>
-      {/* <BackgroundGradient
-        setVideoCallback={(callback) => {
-          videoCallback2.current = callback;
-          videoCallback2.current?.({...videos[queue.current[0]]});
-        }}
-      /> */}
       <div className="w-full space-y-8 text-zinc-50">
         <div className='flex flex-col' style={{'--accentColor': color}}>
           <div className='bg-[var(--accentColor)] duration-1000 ease-in-out shadow-sm'>
             <div className='min-h-[100svh] flex flex-col items-center bg-gradient-to-b from-zinc-900/30 to-zinc-900/80 duration-1000 ease-in-out'>
-              {/* <BackgroundGradient
-                setVideoCallback={(callback) => {
-                  videoCallback2.current = callback;
-                  videoCallback2.current?.({...videos[queue.current[0]]});
-                }}
-              /> */}
               <div className='max-w-3xl w-full inline-flex flex-1 flex-col justify-between gap-12 pt-16 pb-20 z-10'>
                 <div className='flex justify-between items-center px-6 sm:px-6 lg:px-6'>
                   <Link to='/' className='p-3 -ml-3 active:opacity-50 active:scale-95 duration-100 ease-in-out' onClick={changePlayerCount}>
@@ -550,16 +530,11 @@ function PlayerPage({playlist, updateQueue, videos, changePlayerCount, playlistI
                     playingRef={playingRef}
                     playerRef={playerRef}
                     loop={loop}
-                    updatePlayer={updatePlayer}
                     playPrev={playPrev}
                     playNext={playNext}
                     getPrev={getPrev}
                     getNext={getNext}
-                    shuffle={() => shuffleQueue(queue.current)}
-                    setVideoCallback={(callback) => {
-                      videoCallback.current = callback;
-                      videoCallback.current?.({...videos[queue.current[0]]});
-                    }}
+                    shuffle={shuffle}
                     color={color}
                   />
                 </div>
@@ -573,10 +548,7 @@ function PlayerPage({playlist, updateQueue, videos, changePlayerCount, playlistI
           </div>
           <div className='flex flex-col items-center'>
             <div className='max-w-3xl w-full py-8'>
-              <PlaylistQueue videos={videos} initialQueue={queue.current}
-                setQueueUpdateCallback={(callback) => queueUpdateCallback.current = callback}
-                onClick={seekTo}
-              />
+              <PlaylistQueue queue={queue} videos={videos} index={index} onClick={(i) => setIndex(i)}/>
             </div>
           </div>
         </div>
@@ -600,11 +572,10 @@ function PlayerSwitcher({playlists, savePlaylists, syncPlaylists, changePlayerCo
         setPlaylist(playlist);
       }} playlists={playlists} syncPlaylists={syncPlaylists}/>
     ) : (
-      <PlayerPage playlist={playlist} videos={videos} changePlayerCount={changePlayerCount} playlistId={getPlaylistId(playlist.url)} updateQueue={(queue) => {
+      <PlayerPage playlist={playlist} videos={videos} changePlayerCount={changePlayerCount} playlistId={getPlaylistId(playlist.url)} updatePlaylistLocalStorage={(queue, index) => {
         playlist.queue = queue;
-        const newPlaylists = {};
-        newPlaylists[getPlaylistId(playlist.url)] = playlist;
-        savePlaylists(newPlaylists);
+        playlist.index = index;
+        savePlaylists({[getPlaylistId(playlist.url)]: playlist})
       }}/>
     )
   )
@@ -649,11 +620,10 @@ function PlaylistLoadingPage({playlists, savePlaylists, syncPlaylists, changePla
       {!playlist?.queue ? (
         <div></div>
       ) : (
-        <PlayerPage playlist={playlist} videos={videos} changePlayerCount={changePlayerCount} playlistId={getPlaylistId(playlist.url)} updateQueue={(queue) => {
+        <PlayerPage playlist={playlist} videos={videos} changePlayerCount={changePlayerCount} playlistId={getPlaylistId(playlist.url)} updatePlaylistLocalStorage={(queue, index) => {
           playlist.queue = queue;
-          const newPlaylists = {};
-          newPlaylists[getPlaylistId(playlist.url)] = playlist;
-          savePlaylists(newPlaylists);
+          playlist.index = index;
+          savePlaylists({[getPlaylistId(playlist.url)]: playlist})
         }}/>
       )}
     </div>
@@ -760,14 +730,12 @@ function App() {
   async function syncPlaylists() {
     for (const playlistId in playlists) {
       const playlist = playlists[playlistId];
+      playlist.index = playlist.index ?? 0;
       let resp = await fetch(BASE+'get_playlist_video_ids?playlist_id='+playlistId);
       let newVideoIds = await resp.json();
       if (newVideoIds == null) continue;
-      if (!playlist.queue) {
-        playlist.queue = [];
-        playlist.videoIds = {};
-      }
-      const oldVideoIds = playlist.videoIds;
+      playlist.queue = playlist.queue ?? [];
+      const oldVideoIds = playlist.videoIds = playlist.videoIds ?? {};
       playlist.videoIds = {...newVideoIds};
       for (const videoId in oldVideoIds) delete newVideoIds[videoId];
       playlist.queue = Object.keys(newVideoIds).concat(playlist.queue);
