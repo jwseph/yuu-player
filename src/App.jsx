@@ -43,6 +43,7 @@ function blendColors(colorA, colorB, amount) {
 
 function SelectPlaylistPage({playlists, syncPlaylists, setPlaylist}) {
   useEffect(() => {
+    syncPlaylists();
     const interval = setInterval(syncPlaylists, 250)
     return () => clearInterval(interval)
   }, [])
@@ -733,6 +734,14 @@ function App() {
   const [playlists, setPlaylists] = useState(JSON.parse(localStorage.playlists || '{}'))
   const [playerCount, setPlayerCount] = useState(0);
 
+  useEffect(() => {
+    (async () => {
+      for (const playlistId in playlists) {
+        await updatePlaylistInfo(playlists, updatePlaylists, playlistId);
+      }
+    })();
+  }, [])
+
   function changePlayerCount() {
     setPlayerCount(playerCount+1);
   }
@@ -750,7 +759,6 @@ function App() {
 
   async function syncPlaylists() {
     for (const playlistId in playlists) {
-      await updatePlaylistInfo(playlists, updatePlaylists, playlistId);
       const playlist = playlists[playlistId];
       let resp = await fetch(BASE+'get_playlist_video_ids?playlist_id='+playlistId);
       let newVideoIds = await resp.json();
