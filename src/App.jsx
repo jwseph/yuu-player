@@ -6,6 +6,7 @@ import YouTube from 'react-youtube'
 // import { MdSkipNext, MdSkipPrevious, MdShuffle, MdPlayArrow, MdPause, MdRepeatOne, MdRepeatOneOn, MdKeyboardArrowDown, MdKeyboardArrowUp } from 'react-icons/md';
 import { RiPlayFill, RiPauseFill, RiSkipBackFill, RiSkipForwardFill, RiShuffleFill, RiRepeat2Fill, RiRepeatOneFill, RiArrowDownSFill, RiArrowUpSFill, RiArrowDownSLine, RiArrowLeftSLine, RiMoreLine, RiAddLine, RiGithubLine, RiExternalLinkLine } from "react-icons/ri";
 import LoadingBar from 'react-top-loading-bar'
+import { io } from 'socket.io-client'
 
 const BASE = 'https://kamiak-io.fly.dev/yuu/'
 
@@ -587,7 +588,6 @@ function PlayerSwitcher({playlists, savePlaylists, syncPlaylists, changePlayerCo
   const [playlist, setPlaylist] = useState(null);
   const [videos, setVideos] = useState();
   useEffect(() => {
-    setTab(0);
     document.title = 'Select a playlist · Yuu';
   }, [])
   return (
@@ -615,7 +615,6 @@ function PlaylistLoadingPage({playlists, savePlaylists, syncPlaylists, changePla
   const loading = useRef(false);
   const [progress, setProgress] = useState(0);
   useEffect(() => {
-    setTab(0);
     async function loadPlaylist() {
       setProgress(20);
       const playlistId = getPlaylistId(location.href);
@@ -664,7 +663,6 @@ function ImportPage({playlists, updatePlaylists}) {
   const navigate = useNavigate();
   const [playlistUrl, setPlaylistUrl] = useState()
   useEffect(() => {
-    setTab(1);
     document.title = 'Import a playlist · Yuu';
   }, [])
   return (
@@ -733,10 +731,7 @@ function ImportPage({playlists, updatePlaylists}) {
 function App() {
   const [count, setCount] = useState(0)
   const [playlists, setPlaylists] = useState(JSON.parse(localStorage.playlists || '{}'))
-  const [tab, setTab] = useState(0);
   const [playerCount, setPlayerCount] = useState(0);
-
-  window.setTab = setTab;
 
   function changePlayerCount() {
     setPlayerCount(playerCount+1);
