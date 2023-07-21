@@ -40,15 +40,10 @@ function blendColors(colorA, colorB, amount) {
   return '#'+r+g+b;
 }
 
-function SelectPlaylistPage({playlists, syncPlaylists, setPlaylist, changePlayerCount}) {
+function SelectPlaylistPage({playlists, syncPlaylists, setPlaylist}) {
   useEffect(() => {
-    var sync = true;
-    (async function doSync() {
-      if (!sync) return;
-      await syncPlaylists();
-      setTimeout(doSync, 200);
-    })();
-    return () => sync = false;
+    const interval = setInterval(syncPlaylists, 250)
+    return () => clearInterval(interval)
   }, [])
 
   return (
@@ -602,7 +597,7 @@ function PlayerSwitcher({playlists, savePlaylists, syncPlaylists, changePlayerCo
         setVideos(await resp.json());
         // Maybe show loading bar here
         setPlaylist(playlist);
-      }} playlists={playlists} syncPlaylists={syncPlaylists} changePlayerCount={changePlayerCount}/>
+      }} playlists={playlists} syncPlaylists={syncPlaylists}/>
     ) : (
       <PlayerPage playlist={playlist} videos={videos} changePlayerCount={changePlayerCount} playlistId={getPlaylistId(playlist.url)} updateQueue={(queue) => {
         playlist.queue = queue;
