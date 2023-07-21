@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import './App.css'
-import { Route, Link, Routes } from 'react-router-dom'
+import { Route, Link, Routes, useNavigate } from 'react-router-dom'
 import { LazyLoadImage } from 'react-lazy-load-image-component'
 import YouTube from 'react-youtube'
 // import { MdSkipNext, MdSkipPrevious, MdShuffle, MdPlayArrow, MdPause, MdRepeatOne, MdRepeatOneOn, MdKeyboardArrowDown, MdKeyboardArrowUp } from 'react-icons/md';
@@ -23,7 +23,7 @@ const shuffleQueue = (queue) => {
 }
 
 const updatePlaylistInfo = async (playlists, updatePlaylists, playlistId) => {
-  console.log(BASE+'get_playlist_info?playlist_id='+playlistId)
+  // console.log(BASE+'get_playlist_info?playlist_id='+playlistId)
   let resp = await fetch(BASE+'get_playlist_info?playlist_id='+playlistId);
   let playlist = await resp.json();
   playlists[playlistId] = {...playlists[playlistId] || {}, ...playlist};
@@ -46,7 +46,7 @@ function SelectPlaylistPage({playlists, syncPlaylists, setPlaylist, changePlayer
     (async function doSync() {
       if (!sync) return;
       await syncPlaylists();
-      setTimeout(doSync, 1000);
+      setTimeout(doSync, 200);
     })();
     return () => sync = false;
   }, [])
@@ -666,6 +666,7 @@ function PlaylistLoadingPage({playlists, savePlaylists, syncPlaylists, changePla
 }
 
 function ImportPage({playlists, updatePlaylists}) {
+  const navigate = useNavigate();
   const [playlistUrl, setPlaylistUrl] = useState()
   useEffect(() => {
     setTab(1);
@@ -719,6 +720,7 @@ function ImportPage({playlists, updatePlaylists}) {
                 let playlistId = getPlaylistId(playlistUrl);
                 fetch(BASE+'update?playlist_id='+playlistId, {method: 'POST'});
                 await updatePlaylistInfo(playlists, updatePlaylists, playlistId);
+                navigate('/');
               }}
             >
               Update playlist
@@ -735,7 +737,7 @@ function ImportPage({playlists, updatePlaylists}) {
 
 function App() {
   const [count, setCount] = useState(0)
-  const playlists = useRef(JSON.parse(localStorage.playlists || '{}'));
+  const [playlists, setPlaylists] = useState(JSON.parse(localStorage.playlists || '{}'))
   const [tab, setTab] = useState(0);
   const [playerCount, setPlayerCount] = useState(0);
 
@@ -746,8 +748,9 @@ function App() {
   }
 
   function savePlaylists(newPlaylists) {
-    playlists.current = {...playlists.current, ...newPlaylists};
-    localStorage.playlists = JSON.stringify(playlists.current);
+    const updatedPlaylists = {...playlists, ...newPlaylists};
+    setPlaylists(updatedPlaylists);
+    localStorage.playlists = JSON.stringify(updatedPlaylists);
   }
 
   function updatePlaylists(newPlaylists) {
@@ -756,9 +759,9 @@ function App() {
   }
 
   async function syncPlaylists() {
-    for (const playlistId in playlists.current) {
-      await updatePlaylistInfo(playlists.current, updatePlaylists, playlistId);
-      const playlist = playlists.current[playlistId];
+    for (const playlistId in playlists) {
+      await updatePlaylistInfo(playlists, updatePlaylists, playlistId);
+      const playlist = playlists[playlistId];
       let resp = await fetch(BASE+'get_playlist_video_ids?playlist_id='+playlistId);
       let newVideoIds = await resp.json();
       if (newVideoIds == null) continue;
@@ -785,9 +788,9 @@ function App() {
   return (
     <div className="flex flex-col min-h-full items-center justify-center bg-zinc-950 selection:bg-red-700/90 selection:text-red-100">
       <Routes>
-        <Route path='/' element={<PlayerSwitcher key={'player'+playerCount} playlists={playlists.current} savePlaylists={savePlaylists} syncPlaylists={syncPlaylists} changePlayerCount={changePlayerCount}/>}></Route>
-        <Route path='/play' element={<PlaylistLoadingPage playlists={playlists.current} savePlaylists={savePlaylists} syncPlaylists={syncPlaylists} changePlayerCount={changePlayerCount}/>}></Route>
-        <Route path='/import' element={<ImportPage playlists={playlists.current} updatePlaylists={updatePlaylists}/>}></Route>
+        <Route path='/' element={<PlayerSwitcher key={'player'+playerCount} playlists={playlists} savePlaylists={savePlaylists} syncPlaylists={syncPlaylists} changePlayerCount={changePlayerCount}/>}></Route>
+        <Route path='/play' element={<PlaylistLoadingPage playlists={playlists} savePlaylists={savePlaylists} syncPlaylists={syncPlaylists} changePlayerCount={changePlayerCount}/>}></Route>
+        <Route path='/import' element={<ImportPage playlists={playlists} updatePlaylists={updatePlaylists}/>}></Route>
       </Routes>
       <div className='flex flex-col items-center pb-4'>
         <a href='https://github.com/jwseph/youtube-player' className='p-2 active:opacity-50 active:scale-95 duration-100 ease-in-out text-zinc-500'>
