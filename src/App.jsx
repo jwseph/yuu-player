@@ -111,9 +111,22 @@ function SelectPlaylistPage({playlists, syncPlaylists, setPlaylist}) {
 }
 
 function PlaylistQueue({queue, videos, index, onClick}) {
+  const BEHIND = 1, AHEAD = 23;
+  const [center, setCenter] = useState();
+  useEffect(() => {
+    if (queue.length <= BEHIND+1+AHEAD) {
+      setCenter(BEHIND);
+      return;
+    }
+    let center = index;
+    if (center-BEHIND < 0) center = BEHIND;
+    if (center+1+AHEAD > queue.length) center = queue.length-1-AHEAD;
+    setCenter(center);
+  }, [queue, index])
   return (
     <div className='flex flex-col'>
-      {queue.slice(0, 1000).map((videoId, i) => {
+      {queue.map((videoId, i) => {
+        if (i < center-BEHIND || i >= center+1+AHEAD) return null;
         let video = videos[videoId];
         return (
           <button key={videoId}
@@ -145,7 +158,7 @@ function PlaylistQueue({queue, videos, index, onClick}) {
           </button>
         )
       })}
-      <div className='text-center text-xs font-medium tracking-tight pt-6 text-zinc-500'>Showing 1 - {queue.slice(0, 70).length} of {queue.length}</div>
+      <div className='text-center text-xs font-medium tracking-tight pt-6 text-zinc-500'>Showing {center-BEHIND+1} - {Math.min(center+AHEAD+1, queue.length)} of {queue.length}</div>
     </div>
   )
 }
