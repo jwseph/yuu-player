@@ -6,7 +6,7 @@ import YouTube from 'react-youtube'
 // import { MdSkipNext, MdSkipPrevious, MdShuffle, MdPlayArrow, MdPause, MdRepeatOne, MdRepeatOneOn, MdKeyboardArrowDown, MdKeyboardArrowUp } from 'react-icons/md';
 import { RiPlayFill, RiPauseFill, RiSkipBackFill, RiSkipForwardFill, RiShuffleFill, RiRepeat2Fill, RiRepeatOneFill, RiArrowDownSFill, RiArrowUpSFill, RiArrowDownSLine, RiArrowLeftSLine, RiMoreLine, RiAddLine, RiGithubLine, RiExternalLinkLine } from "react-icons/ri";
 import LoadingBar from 'react-top-loading-bar'
-import { io } from 'socket.io-client'
+import { socket } from './socket'
 
 const BASE = 'https://kamiak-io.fly.dev/yuu/'
 
@@ -458,7 +458,10 @@ function PlayerPage({playlist, updatePlaylistLocalStorage, videos, changePlayerC
   }, [video]);
   const wrapIndex = (i) => (i+queue.length)%queue.length;
   const playCurr = () => playerRef.current.internalPlayer.playVideo();
-  const playNext = () => setIndex(wrapIndex(index+1));
+  const playNext = () => {
+    console.log(videos[queue[index]].title, videos[queue[wrapIndex(index+1)]].title)
+    return setIndex(wrapIndex(index+1));
+  }
   const playPrev = () => setIndex(wrapIndex(index-1));
   const getNext = () => videos[queue[wrapIndex(index+1)]];
   const getPrev = () => videos[queue[wrapIndex(index-1)]];
@@ -466,6 +469,11 @@ function PlayerPage({playlist, updatePlaylistLocalStorage, videos, changePlayerC
     setQueue([...shuffleQueue(queue)]);
     setIndex(0);
   }
+  const autoNext = useRef();
+  useEffect(() => {
+    autoNext.current = () => loop.current ? playCurr() : playNext();
+  }, [index])
+  console.log(index);
   const youtubePlayer = useMemo(() => 
   <YouTube videoId={queue[index]}
     opts={{
@@ -473,7 +481,7 @@ function PlayerPage({playlist, updatePlaylistLocalStorage, videos, changePlayerC
       playerVars: {autoplay: 1, origin: location.origin},
     }}
     ref={playerRef}
-    onEnd={() => loop.current ? playCurr() : playNext()}
+    onEnd={() => autoNext.current()}
     onStateChange={async (state) => {
       if (state.data == 1) playingRef.current = true;
       if (state.data == 2) playingRef.current = false;
