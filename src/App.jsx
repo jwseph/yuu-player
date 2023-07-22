@@ -471,10 +471,7 @@ function PlayerPage({playlist, updatePlaylistLocalStorage, videos, changePlayerC
   }, [video]);
   const wrapIndex = (i) => (i+queue.length)%queue.length;
   const playCurr = () => playerRef.current.internalPlayer.playVideo();
-  const playNext = () => {
-    console.log(videos[queue[index]].title, videos[queue[wrapIndex(index+1)]].title)
-    return setIndex(wrapIndex(index+1));
-  }
+  const playNext = () => setIndex(wrapIndex(index+1));
   const playPrev = () => setIndex(wrapIndex(index-1));
   const getNext = () => videos[queue[wrapIndex(index+1)]];
   const getPrev = () => videos[queue[wrapIndex(index-1)]];
@@ -486,7 +483,6 @@ function PlayerPage({playlist, updatePlaylistLocalStorage, videos, changePlayerC
   useEffect(() => {
     autoNext.current = () => loop.current ? playCurr() : playNext();
   }, [index])
-  console.log(index);
   const youtubePlayer = useMemo(() => 
   <YouTube videoId={queue[index]}
     opts={{
