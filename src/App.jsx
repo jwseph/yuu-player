@@ -137,7 +137,7 @@ function PlaylistQueue({queue, videos, index, onClick}) {
                 />
               </div>
               <div className='inline-flex flex-col flex-1 truncate'>
-                <h1 className='truncate text-xs text-left flex-1 font-semibold text-zinc-300'>{video.title}</h1>
+                <h1 className='truncate text-xs text-left flex-1 text-zinc-300'>{video.title}</h1>
                 <span className='truncate text-xs text-left text-zinc-500'>{video.channel}</span>
               </div>
               <div className='pl-2 text-xs text-zinc-500 text-left'>{i+1}</div>
@@ -450,7 +450,12 @@ function PlayerPage({playlist, updatePlaylistLocalStorage, videos, changePlayerC
   }, [queue, index])
   useEffect(() => {
     document.title = `${playlist.title} · ${videos[queue[index]].title} · Yuu`;
-  }, [video])
+    if (!video) {
+      setColor('#18181b');
+      return;
+    }
+    updateColor();
+  }, [video]);
   const wrapIndex = (i) => (i+queue.length)%queue.length;
   const playCurr = () => playerRef.current.internalPlayer.playVideo();
   const playNext = () => setIndex(wrapIndex(index+1));
@@ -488,13 +493,6 @@ function PlayerPage({playlist, updatePlaylistLocalStorage, videos, changePlayerC
     if (video.thumbnails.small != image) return;
     setColor(newColor+'7a');
   }
-  useEffect(() => {
-    if (!video) {
-      setColor('#18181b');
-      return;
-    }
-    updateColor();
-  }, [video]);
 
   return (
     <div className='w-full flex flex-col items-center'>
@@ -526,6 +524,7 @@ function PlayerPage({playlist, updatePlaylistLocalStorage, videos, changePlayerC
                 </div>
                 <div className='px-6 sm:px-6 lg:px-6'>
                   <PlayerController
+                    video={video}
                     playingCallback={playingCallback}
                     playingRef={playingRef}
                     playerRef={playerRef}
