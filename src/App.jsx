@@ -189,17 +189,19 @@ function PauseButton({addPlayingListener, onClick, color, video, changePlaying})
   )
 }
 
-function LoopOneButton({onClick, video}) {
-  const [loop, setLoop] = useState(false)
+function LoopOneButton({loopOne, setLoopOne, video, onLoopOneClick}) {
   return (
     <button className='p-3 -mr-3 text-zinc-50 active:opacity-50 active:scale-95 disabled:opacity-50 disabled:scale-100 duration-100 ease-in-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
       onClick={() => {
-        onClick(!loop);
-        setLoop(!loop);
+        if (onLoopOneClick) {
+          onLoopOneClick();
+          return;
+        }
+        setLoopOne(!loopOne);
       }}
       disabled={!video}
     >
-      {!loop ? <RiRepeat2Fill className='w-5 h-5'/> : <RiRepeatOneFill className='w-5 h-5'/>}
+      {!loopOne ? <RiRepeat2Fill className='w-5 h-5'/> : <RiRepeatOneFill className='w-5 h-5'/>}
     </button>
   )
 }
@@ -338,7 +340,7 @@ function PlayerBar({playerRef, video, onDragStop}) {
   )
 }
 
-function PlayerController({video, playingCallback, playingRef, playerRef, loop, playPrev, playNext, getPrev, getNext, shuffle, color, onDragStop, changePlaying}) {
+function PlayerController({video, playingCallback, playingRef, playerRef, loopOne, setLoopOne, onLoopOneClick, playPrev, playNext, getPrev, getNext, shuffle, color, onDragStop, changePlaying}) {
   const [description, setDescription] = useState(false);
   const [channelImage, setChannelImage] = useState();
   const [channelSubscribers, setChannelSubscribers] = useState('');
@@ -423,7 +425,7 @@ function PlayerController({video, playingCallback, playingRef, playerRef, loop, 
             <RiSkipForwardFill className='absolute w-9 h-9 z-20 group-active:opacity-0 group-disabled:opacity-50 drop-shadow-sm duration-100 ease-in-out'/>
           </button>
           <div className='flex-1'></div>
-          <LoopOneButton onClick={(newLoop) => loop.current = newLoop} video={video}/>
+          <LoopOneButton loopOne={loopOne} setLoopOne={setLoopOne} video={video} onLoopOneClick={onLoopOneClick}/>
         </div>
         {description && (
           <div className='px-5 py-5 text-xs border-t border-zinc-950 text-zinc-300 whitespace-pre-wrap break-words space-y-4'>
@@ -471,7 +473,7 @@ function PlayerPage({playlist, updatePlaylistLocalStorage, videos, changePlayerC
   const playingRef = useRef(false);
   const playingCallback = useRef();
   const previousStates = useRef([-2, -2, -2]);
-  const loop = useRef(false);
+  const [loopOne, setLoopOne] = useState(false);
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [])
@@ -500,8 +502,8 @@ function PlayerPage({playlist, updatePlaylistLocalStorage, videos, changePlayerC
   }
   const autoNext = useRef();
   useEffect(() => {
-    autoNext.current = () => loop.current ? playCurr() : playNext();
-  }, [index])
+    autoNext.current = loopOne ? playCurr : playNext;
+  }, [index, loopOne])
   const youtubePlayer = useMemo(() => 
   <YouTube videoId={queue[index]}
     opts={{
@@ -564,7 +566,8 @@ function PlayerPage({playlist, updatePlaylistLocalStorage, videos, changePlayerC
                     playingCallback={playingCallback}
                     playingRef={playingRef}
                     playerRef={playerRef}
-                    loop={loop}
+                    loopOne={loopOne}
+                    setLoopOne={setLoopOne}
                     playPrev={playPrev}
                     playNext={playNext}
                     getPrev={getPrev}
@@ -605,7 +608,7 @@ function SessionPage({changePlayerCount}) {
   const playingRef = useRef(false);
   const playingCallback = useRef();
   const previousStates = useRef([-2, -2, -2]);
-  const loop = useRef(false);
+  const [loopOne, setLoopOne] = useState(false);
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [])
@@ -655,8 +658,8 @@ function SessionPage({changePlayerCount}) {
   }
   const autoNext = useRef();
   useEffect(() => {
-    autoNext.current = () => loop.current ? playCurr() : playNext();
-  }, [videoId])
+    autoNext.current = loopOne ? playCurr : playNext;
+  }, [videoId, loopOne])
   const youtubePlayer = useMemo(() => 
   <YouTube
     opts={{
@@ -694,6 +697,7 @@ function SessionPage({changePlayerCount}) {
     setVideos({...data.videos});
     setPlayback({queue: [...data.queue], index: data.index});
     if (!data.queue.length) return;
+    setLoopOne(data.loop_one);
     let currentProgress = await playerRef.current.internalPlayer.getCurrentTime();
     if (Math.abs(data.progress-currentProgress) > .5) {
       await playerRef.current.internalPlayer.seekTo(data.progress);
@@ -828,7 +832,13 @@ function SessionPage({changePlayerCount}) {
                     playingCallback={playingCallback}
                     playingRef={playingRef}
                     playerRef={playerRef}
-                    loop={loop}
+                    loopOne={loopOne}
+                    setLoopOne={setLoopOne}
+                    onLoopOneClick={() => {
+                      socket.emit('toggle_loop_one', {
+                        stream_id: streamId.current,
+                      })
+                    }}
                     playPrev={playPrev}
                     playNext={playNext}
                     getPrev={getPrev}
