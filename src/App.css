@@ -1,5 +1,13 @@
 #root {
   margin: 0 auto;
+  --toastify-color-light: #f4f4f5;
+  --toastify-color-dark: #27272a;
+  --toastify-color-error: #dc2626;
+  --toastify-text-color-dark: #f4f4f5;
+  --toastify-color-progress-dark: #71717a;
+  --toastify-color-progress-error: var(--toastify-color-error);
+  --toastify-icon-color-error: var(--toastify-color-error);
+  --toastify-font-family: Inter, sans-serif;
 }
 * {
   outline: none;
@@ -28,4 +36,7 @@ img, a {
   -moz-user-drag: none;
   -o-user-drag: none;
   user-drag: none;
+}
+#toastWrapper button {
+  color: #71717a;
 }

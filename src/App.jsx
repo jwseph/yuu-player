@@ -1,12 +1,14 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import './App.css'
-import { Route, Link, Routes, useNavigate } from 'react-router-dom'
+import { Route, Link, Routes, useNavigate, useParams } from 'react-router-dom'
 import { LazyLoadImage } from 'react-lazy-load-image-component'
 import YouTube from 'react-youtube'
 // import { MdSkipNext, MdSkipPrevious, MdShuffle, MdPlayArrow, MdPause, MdRepeatOne, MdRepeatOneOn, MdKeyboardArrowDown, MdKeyboardArrowUp } from 'react-icons/md';
-import { RiPlayFill, RiPauseFill, RiSkipBackFill, RiSkipForwardFill, RiShuffleFill, RiRepeat2Fill, RiRepeatOneFill, RiArrowDownSFill, RiArrowUpSFill, RiArrowDownSLine, RiArrowLeftSLine, RiMoreLine, RiAddLine, RiGithubLine, RiExternalLinkLine } from "react-icons/ri";
+import { RiPlayFill, RiPauseFill, RiSkipBackFill, RiSkipForwardFill, RiShuffleFill, RiRepeat2Fill, RiRepeatOneFill, RiArrowDownSFill, RiArrowUpSFill, RiArrowDownSLine, RiArrowLeftSLine, RiMoreLine, RiAddLine, RiGithubLine, RiExternalLinkLine, RiGroupLine, RiPlayListAddLine } from "react-icons/ri";
 import LoadingBar from 'react-top-loading-bar'
 import { socket } from './socket'
+import { ToastContainer, toast } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
 const BASE = 'https://kamiak-io.fly.dev/yuu/'
 
@@ -55,9 +57,9 @@ function SelectPlaylistPage({playlists, syncPlaylists, setPlaylist}) {
   return (
     <div className="w-full max-w-3xl py-12 px-6 sm:px-6 lg:px-6 space-y-6 mb-8">
       <div className='flex justify-between items-center text-zinc-200'>
-        <a href='https://github.com/jwseph/youtube-player' className='invisible p-3 -ml-3 active:opacity-50 active:scale-95 duration-100 ease-in-out'>
-          <RiGithubLine className='w-7 h-7'/>
-        </a>
+        <Link to='/s' className='w-10 h-10 -mr-3 flex justify-center items-center active:opacity-50 active:scale-95 duration-100 ease-in-out'>
+          <RiGroupLine className='w-5 h-5'/>
+        </Link>
         <div>
           <h2 className="text-center text-2xl font-semibold tracking-tighter">
           Select a playlist
@@ -142,7 +144,7 @@ function PlaylistQueue({queue, videos, index, onClick}) {
                   'absolute bg-zinc-900/60 w-full h-full flex items-center justify-center duration-100',
                   index == i ? 'opacity-100' : 'opacity-0',
                 )}>
-                  <RiPlayFill className='w-6 h-6 text-zinc-50'/>
+                  <RiPlayFill className='w-6 h-6 text-zinc-50 drop-shadow-sm'/>
                 </div>
                 <LazyLoadImage
                   className='h-7 aspect-video rounded-sm'
@@ -158,38 +160,44 @@ function PlaylistQueue({queue, videos, index, onClick}) {
           </button>
         )
       })}
-      <div className='text-center text-xs font-medium tracking-tight pt-6 text-zinc-500'>Showing {center-BEHIND+1} - {Math.min(center+AHEAD+1, queue.length)} of {queue.length}</div>
+      <div className='text-center text-xs font-medium tracking-tight pt-6 text-zinc-500'>Showing {(queue.length > 0) * center-BEHIND+1} - {Math.min(center+AHEAD+1, queue.length)} of {queue.length}</div>
     </div>
   )
 }
 
-function PauseButton({addPlayingListener, onClick, color}) {
+function PauseButton({addPlayingListener, onClick, color, video, changePlaying}) {
   const [playing, setPlaying] = useState(false)
   useEffect(() => {
     addPlayingListener((playing) => setPlaying(playing));
   }, [playing, setPlaying])
   return (
     <button
-      className='p-3 text-[var(--darkIconColor)] bg-zinc-50 active:opacity-50 active:scale-95 duration-100 ease-in-out aspect-square rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600'
+      className='p-3 text-[var(--darkIconColor)] bg-zinc-50 active:opacity-50 active:scale-95 disabled:opacity-50 disabled:scale-100 duration-100 ease-in-out aspect-square rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600'
       onClick={async () => {
+        if (changePlaying) {
+          changePlaying(playing);
+          return;
+        }
         setPlaying(!playing);
         await onClick();
       }}
       style={{'--darkIconColor': blendColors('#18181b', color, 0.11)}}
+      disabled={!video}
     >
       {!playing ? <RiPlayFill className='w-9 h-9 duration-1000 ease-in-out'/> : <RiPauseFill className='w-9 h-9 duration-1000 ease-in-out'/>}
     </button>
   )
 }
 
-function LoopOneButton({onClick}) {
+function LoopOneButton({onClick, video}) {
   const [loop, setLoop] = useState(false)
   return (
-    <button className='p-3 -mr-3 text-zinc-50 active:opacity-50 active:scale-95 duration-100 ease-in-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
+    <button className='p-3 -mr-3 text-zinc-50 active:opacity-50 active:scale-95 disabled:opacity-50 disabled:scale-100 duration-100 ease-in-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
       onClick={() => {
         onClick(!loop);
         setLoop(!loop);
       }}
+      disabled={!video}
     >
       {!loop ? <RiRepeat2Fill className='w-5 h-5'/> : <RiRepeatOneFill className='w-5 h-5'/>}
     </button>
@@ -210,7 +218,7 @@ function DescriptionButton({onClick}) {
   )
 }
 
-function PlayerBar({playerRef}) {
+function PlayerBar({playerRef, video, onDragStop}) {
   const [time, setTime] = useState(0);
   const [duration, setDuration] = useState(1);
   const dragging = useRef(false);
@@ -246,12 +254,18 @@ function PlayerBar({playerRef}) {
   async function stopDragging(e) {
     if (!dragging.current || endingDragging.current) return;
 
+    let newTime = await getIntendedTime(e);
+
     endingDragging.current = true;
-    await playerRef.current.internalPlayer.seekTo(await getIntendedTime(e), true);
+    if (!onDragStop) await playerRef.current.internalPlayer.seekTo(newTime, true);
     endingDragging.current = false;
 
     dragging.current = false;
     updateTimeDelay.current = 5;
+    
+    console.log('STOP DRAGGING', newTime, onDragStop);
+
+    onDragStop?.(newTime);
   }
   async function whenDragging(e) {
     if (!dragging.current || endingDragging.current) return;
@@ -300,10 +314,10 @@ function PlayerBar({playerRef}) {
     }
   }, [])
   return (
-    <div className='select-none'>
+    <div className={classNames('select-none', !video && 'opacity-50')}>
       <div
         id='PlayerBar'
-        className='w-full h-6 flex items-center cursor-pointer touch-none'
+        className={classNames('group w-full h-6 flex items-center touch-none', video && 'cursor-pointer')}
         onMouseDown={(e) => startDragging(e.nativeEvent)}
         onTouchStart={(e) => startDraggingTouch(e.nativeEvent)}
       >
@@ -324,7 +338,7 @@ function PlayerBar({playerRef}) {
   )
 }
 
-function PlayerController({video, playingCallback, playingRef, playerRef, loop, playPrev, playNext, getPrev, getNext, shuffle, color}) {
+function PlayerController({video, playingCallback, playingRef, playerRef, loop, playPrev, playNext, getPrev, getNext, shuffle, color, onDragStop, changePlaying}) {
   const [description, setDescription] = useState(false);
   const [channelImage, setChannelImage] = useState();
   const [channelSubscribers, setChannelSubscribers] = useState('');
@@ -372,39 +386,44 @@ function PlayerController({video, playingCallback, playingRef, playerRef, loop, 
         </div>
       )}
       {playerRef.current && (
-        <PlayerBar playerRef={playerRef}/>
+        <PlayerBar playerRef={playerRef} video={video} onDragStop={onDragStop}/>
       )}
       <div className='flex flex-col'>
         <div className='flex'>
           {/* <DescriptionButton onClick={(newDescription) => setDescription(newDescription)}/> */}
-          <button className='p-3 -ml-3 text-zinc-50 active:opacity-50 active:scale-95 duration-100 ease-in-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
+          <button className='p-3 -ml-3 text-zinc-50 active:opacity-50 active:scale-95 disabled:opacity-50 disabled:scale-100 duration-100 ease-in-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
             onClick={shuffle}
+            disabled={!video}
           >
             <RiShuffleFill className='w-5 h-5'/>
           </button>
           <div className='flex-1'></div>
-          <button className='group flex flex-row-reverse items-center justify-center p-3 select-none text-zinc-50 active:scale-95 duration-100 ease-in-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
+          <button className='group flex flex-row-reverse items-center justify-center p-3 select-none text-zinc-50 active:scale-95 disabled:scale-100 duration-100 ease-in-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
             onClick={playPrev}
+            disabled={!video}
           >
-            <img className='w-16 scale-150 aspect-video opacity-30 group-active:opacity-100 duration-100 ease-in-out rounded-sm' src={getPrev().thumbnails.small}/>
-            <RiSkipBackFill className='absolute w-9 h-9 z-20 group-active:opacity-0 duration-100 ease-in-out'/>
+            {video && <img className='w-16 scale-150 aspect-video opacity-30 group-active:opacity-100 duration-100 ease-in-out rounded-sm' src={getPrev().thumbnails.small}/>}
+            <RiSkipBackFill className='absolute w-9 h-9 z-20 group-active:opacity-0 group-disabled:opacity-50 drop-shadow-sm duration-100 ease-in-out'/>
           </button>
           <div className='flex-1 max-w-[3rem]'></div>
           <div>
             <PauseButton addPlayingListener={(callback) => playingCallback.current = callback}
               onClick={togglePlaying}
               color={color}
+              video={video}
+              changePlaying={changePlaying}
             />
           </div>
           <div className='flex-1 max-w-[3rem]'></div>
-          <button className='group flex items-center justify-center p-3 select-none text-zinc-50 active:scale-95 duration-100 ease-in-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
+          <button className='group flex items-center justify-center p-3 select-none text-zinc-50 active:scale-95 disabled:scale-100 duration-100 ease-in-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
             onClick={playNext}
+            disabled={!video}
           >
-            <img className='w-16 scale-150 aspect-video opacity-30 group-active:opacity-100 duration-100 ease-in-out rounded-sm' src={getNext().thumbnails.small}/>
-            <RiSkipForwardFill className='absolute w-9 h-9 z-10 group-active:opacity-0 duration-100 ease-in-out'/>
+            {video && <img className='w-16 scale-150 aspect-video opacity-30 group-active:opacity-100 duration-100 ease-in-out rounded-sm' src={getNext().thumbnails.small}/>}
+            <RiSkipForwardFill className='absolute w-9 h-9 z-20 group-active:opacity-0 group-disabled:opacity-50 drop-shadow-sm duration-100 ease-in-out'/>
           </button>
           <div className='flex-1'></div>
-          <LoopOneButton onClick={(newLoop) => loop.current = newLoop}/>
+          <LoopOneButton onClick={(newLoop) => loop.current = newLoop} video={video}/>
         </div>
         {description && (
           <div className='px-5 py-5 text-xs border-t border-zinc-950 text-zinc-300 whitespace-pre-wrap break-words space-y-4'>
@@ -462,11 +481,11 @@ function PlayerPage({playlist, updatePlaylistLocalStorage, videos, changePlayerC
     playerRef.current.internalPlayer.loadVideoById(queue[index]);
   }, [queue, index])
   useEffect(() => {
-    document.title = `${playlist.title} · ${videos[queue[index]].title} · Yuu`;
     if (!video) {
       setColor('#18181b');
       return;
     }
+    document.title = `${playlist.title} · ${video.title} · Yuu`;
     updateColor();
   }, [video]);
   const wrapIndex = (i) => (i+queue.length)%queue.length;
@@ -498,7 +517,7 @@ function PlayerPage({playlist, updatePlaylistLocalStorage, videos, changePlayerC
         playNext();
         previousStates.current[2] = 0;
       }
-      if (playingCallback.current) playingCallback.current(playingRef.current);
+      playingCallback.current?.(playingRef.current);
       previousStates.current.shift();
       previousStates.current.push(state.data);
     }}
@@ -519,7 +538,7 @@ function PlayerPage({playlist, updatePlaylistLocalStorage, videos, changePlayerC
             <div className='min-h-[100svh] flex flex-col items-center bg-gradient-to-b from-zinc-900/30 to-zinc-900/80 duration-1000 ease-in-out'>
               <div className='max-w-3xl w-full inline-flex flex-1 flex-col justify-between gap-12 pt-16 pb-20 z-10'>
                 <div className='flex justify-between items-center px-6 sm:px-6 lg:px-6'>
-                  <Link to='/' className='p-3 -ml-3 active:opacity-50 active:scale-95 duration-100 ease-in-out' onClick={changePlayerCount}>
+                  <Link to='/' className='w-10 h-10 -ml-3 flex justify-center items-center active:opacity-50 active:scale-95 duration-100 ease-in-out' onClick={changePlayerCount}>
                     <RiArrowLeftSLine className='w-7 h-7'/>
                   </Link>
                   <div>
@@ -565,6 +584,289 @@ function PlayerPage({playlist, updatePlaylistLocalStorage, videos, changePlayerC
           <div className='flex flex-col items-center'>
             <div className='max-w-3xl w-full py-8'>
               <PlaylistQueue queue={queue} videos={videos} index={index} onClick={(i) => setIndex(i)}/>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function SessionPage({changePlayerCount}) {
+  const { session } = useParams();
+  const [videos, setVideos] = useState({});
+  const [playback, setPlayback] = useState({queue: [], index: 0});
+  const [video, setVideo] = useState(null);
+  const [color, setColor] = useState('#18181b');
+  const [videoId, setVideoId] = useState();
+  const streamId = useRef(session);
+  const [displayedStreamId, setDisplayedStreamId] = useState(session)
+  const playerRef = useRef(null);
+  const playingRef = useRef(false);
+  const playingCallback = useRef();
+  const previousStates = useRef([-2, -2, -2]);
+  const loop = useRef(false);
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [])
+  useEffect(() => {
+    if (playback.index < 0 || playback.index >= playback.queue.length) {
+      setVideoId(null);
+      return;
+    }
+    setVideoId(playback.queue[playback.index]);
+  }, [playback])
+  useEffect(() => {
+    if (!videoId) {
+      setVideo(null);
+      return;
+    }
+    setVideo({...videos[videoId]});
+    console.log('LOADING VIDEO')
+    playerRef.current.internalPlayer.loadVideoById(videoId);
+  }, [videoId])
+  useEffect(() => {
+    if (!video) {
+      document.title = `Group session · Yuu`;
+      setColor('#18181b');
+      return;
+    }
+    document.title = `Group session · ${video.title} · Yuu`;
+    updateColor();
+  }, [video]);
+  const wrapIndex = (i) => (i+playback.queue.length)%playback.queue.length;
+  const playCurr = () => playerRef.current.internalPlayer.playVideo();
+  const playNext = () => {
+    socket.emit('select_video', {
+      stream_id: streamId.current,
+      video_id: playback.queue[wrapIndex(playback.index+1)],
+    });
+  }
+  const playPrev = () => {
+    socket.emit('select_video', {
+      stream_id: streamId.current,
+      video_id: playback.queue[wrapIndex(playback.index-1)],
+    });
+  }
+  const getNext = () => videos[playback.queue[wrapIndex(playback.index+1)]];
+  const getPrev = () => videos[playback.queue[wrapIndex(playback.index-1)]];
+  const shuffle = () => {
+    setPlayback({queue: [...shuffleQueue(playback.queue)], index: 0});
+  }
+  const autoNext = useRef();
+  useEffect(() => {
+    autoNext.current = () => loop.current ? playCurr() : playNext();
+  }, [videoId])
+  const youtubePlayer = useMemo(() => 
+  <YouTube
+    opts={{
+      host: 'https://www.youtube-nocookie.com',
+      playerVars: {autoplay: 1, origin: location.origin},
+    }}
+    ref={playerRef}
+    onEnd={() => autoNext.current()}
+    onStateChange={async (state) => {
+      if (state.data == 1) playingRef.current = true;
+      if (state.data == 2) playingRef.current = false;
+      if (state.data == -1 && previousStates.current == '0,-1,3') {
+        playNext();
+        previousStates.current[2] = 0;
+      }
+      playingCallback.current?.(playingRef.current);
+      previousStates.current.shift();
+      previousStates.current.push(state.data);
+    }}
+  />, [])
+  async function updateColor() {
+    let image = video.thumbnails.small;
+    let r = await fetch(BASE+'get_color?image_url='+encodeURIComponent(image))
+    let newColor = await r.json();
+    if (video.thumbnails.small != image) return;
+    setColor(newColor+'7a');
+  }
+  useEffect(() => {
+    document.addEventListener('keydown', addItemsCallback);
+    return () => document.removeEventListener('keydown', addItemsCallback)
+  }, [])
+  async function useNewPlayData(data) {
+    console.log('update', data);
+    console.log(data.playing);
+    setVideos({...data.videos});
+    setPlayback({queue: [...data.queue], index: data.index});
+    if (!data.queue.length) return;
+    let currentProgress = await playerRef.current.internalPlayer.getCurrentTime();
+    if (Math.abs(data.progress-currentProgress) > .5) {
+      await playerRef.current.internalPlayer.seekTo(data.progress);
+    }
+    if (playingRef.current != data.playing) {
+      if (data.playing) await playerRef.current.internalPlayer.playVideo();
+      else await playerRef.current.internalPlayer.pauseVideo();
+      playingRef.current = data.playing;
+      playingCallback.current?.(playingRef.current);
+    }
+  }
+  useEffect(() => {
+    console.log('yay', streamId.current, !streamId.current);
+    if (!streamId.current) {
+      console.log('Creating stream...')
+      streamId.current = ' ';
+      socket.emit('create_stream', (stream_id) => {
+        streamId.current = stream_id;
+        setDisplayedStreamId(stream_id);
+        console.log('Created stream', stream_id)
+      })
+    }
+    socket.on('update', useNewPlayData);
+    const interval = setInterval(() => {
+      console.log('stream id', streamId.current)
+      if (!streamId.current) return;
+      socket.emit('get_stream', {stream_id: streamId.current}, useNewPlayData);
+      // socket.emit('get_stream', {stream_id: streamId}, (data) => {
+      //   console.log('ping', data)
+      // })
+    }, 500)
+    return () => {
+      socket.emit('leave_stream');
+      socket.removeAllListeners();
+      clearInterval(interval);
+    }
+  }, [])
+  function addItemsCallback(e) {
+    if (e.key == 'v' && e.ctrlKey) {
+      e.preventDefault();
+      addItems();
+    }
+  }
+  async function addItems() {
+    let text;
+    try {
+      text = await navigator.clipboard.readText();
+    } catch {
+      toast.error('Clipboard permission required')
+      return;
+    }
+    let url = text.trim(), params;
+    try {
+      if (url.includes('yuu.pages.dev/s/') || url.includes('localhost:5173/s/')) {
+        throw new Error('Trying to create URL using this page')
+      }
+      params = new URL(url).searchParams;
+    } catch {
+      toast('Copy a video or playlist URL, then add it to the queue by pressing the top-right button or Ctrl+V');
+      return;
+    }
+    let videoId = params.get('v');
+    if (!videoId && url.includes('youtu.be')) {
+      videoId = getVideoId(url);
+    }
+    let playlistId = params.get('list');
+    if (videoId) {
+      console.log('Video URL detected')
+      socket.emit('add_video', {
+        stream_id: streamId.current,
+        video_id: videoId,
+      })
+      toast('Adding video', {autoClose: 1000})
+      console.log('done');
+      return;
+    }
+    if (playlistId) {
+      console.log('Playlist URL detected');
+      socket.emit('add_playlist', {
+        stream_id: streamId.current,
+        playlist_id: playlistId,
+      })
+      toast('Adding playlist', {autoClose: 5000})
+      console.log('done')
+      return;
+    }
+    toast.error('Please check that you have copied the correct URL')
+  }
+  useEffect(() => {
+    if (!displayedStreamId) return;
+    history.replaceState({}, '', location.origin+'/s/'+displayedStreamId);
+  }, [displayedStreamId])
+
+  return (
+    <div className='w-full flex flex-col items-center'>
+      <div className="w-full space-y-8 text-zinc-50">
+        <div className='flex flex-col' style={{'--accentColor': color}}>
+          <div className='bg-[var(--accentColor)] duration-1000 ease-in-out shadow-sm'>
+            <div className='min-h-[100svh] flex flex-col items-center bg-gradient-to-b from-zinc-900/30 to-zinc-900/80 duration-1000 ease-in-out'>
+              <div className='max-w-3xl w-full inline-flex flex-1 flex-col justify-between gap-12 pt-16 pb-20 z-10'>
+                <div className='flex justify-between items-center px-6 sm:px-6 lg:px-6'>
+                  <Link to='/' className='w-10 h-10 -ml-3 flex justify-center items-center active:opacity-50 active:scale-95 duration-100 ease-in-out' onClick={changePlayerCount}>
+                    <RiArrowLeftSLine className='w-7 h-7'/>
+                  </Link>
+                  <div>
+                    <h2 className="text-center text-sm font-semibold tracking-tight">
+                      Group session
+                    </h2>
+                    <h2 className="text-center text-sm font-light">
+                      {displayedStreamId}
+                    </h2>
+                  </div>
+                  <button className='w-10 h-10 -mr-3 flex justify-center items-center active:opacity-50 active:scale-95 duration-100 ease-in-out'
+                    onClick={addItems}
+                  >
+                    <RiPlayListAddLine className='w-5 h-5'/>
+                  </button>
+                </div>
+                <div className='px-6 sm:px-6 lg:px-6'>
+                  <div id='videoContainer' className='w-full aspect-video rounded-md shadow-2xl overflow-hidden group'>
+                    {!video && <div className='w-full h-full bg-zinc-800'>
+                      <div className='w-full h-full p-[20%] flex justify-center items-center'>
+                        <RiPlayListAddLine className='h-full aspect-square flex-1 text-zinc-700'/>
+                      </div>
+                    </div>}
+                    {youtubePlayer}
+                  </div>
+                </div>
+                <div className='px-6 sm:px-6 lg:px-6'>
+                  <PlayerController
+                    video={video}
+                    playingCallback={playingCallback}
+                    playingRef={playingRef}
+                    playerRef={playerRef}
+                    loop={loop}
+                    playPrev={playPrev}
+                    playNext={playNext}
+                    getPrev={getPrev}
+                    getNext={getNext}
+                    shuffle={shuffle}
+                    color={color}
+                    onDragStop={(newProgress) => {
+                      console.log('seek to', newProgress);
+                      socket.emit('seek', {
+                        stream_id: streamId.current,
+                        progress: newProgress,
+                      })
+                    }}
+                    changePlaying={(newPlaying) => {
+                      socket.emit('toggle_playing', {
+                        stream_id: streamId.current,
+                      })
+                    }}
+                  />
+                </div>
+
+              </div>
+            </div>
+            <div
+              className='w-full h-px bg-[var(--borderColor)] duration-1000 ease-in-out'
+              style={{'--borderColor': blendColors('#18181b', color, 0.3)}}
+            ></div>
+          </div>
+          <div className='flex flex-col items-center'>
+            <div className='max-w-3xl w-full py-8'>
+              <PlaylistQueue queue={playback.queue} videos={videos} index={playback.index}
+                onClick={(i) => {
+                  socket.emit('select_video', {
+                    stream_id: streamId.current,
+                    video_id: playback.queue[i],
+                  })
+                }}
+              />
             </div>
           </div>
         </div>
@@ -773,11 +1075,28 @@ function App() {
         <Route path='/' element={<PlayerSwitcher key={'player'+playerCount} playlists={playlists} savePlaylists={savePlaylists} syncPlaylists={syncPlaylists} changePlayerCount={changePlayerCount}/>}></Route>
         <Route path='/play' element={<PlaylistLoadingPage playlists={playlists} savePlaylists={savePlaylists} syncPlaylists={syncPlaylists} changePlayerCount={changePlayerCount}/>}></Route>
         <Route path='/import' element={<ImportPage playlists={playlists} updatePlaylists={updatePlaylists}/>}></Route>
+        <Route path='/s' element={<SessionPage changePlayerCount={changePlayerCount}/>}></Route>
+        <Route path='/s/:session' element={<SessionPage changePlayerCount={changePlayerCount}/>}></Route>
       </Routes>
       <div className='flex flex-col items-center pb-4'>
         <a href='https://github.com/jwseph/youtube-player' className='p-2 active:opacity-50 active:scale-95 duration-100 ease-in-out text-zinc-500'>
           <RiGithubLine className='w-5 h-5'/>
         </a>
+      </div>
+      <div id='toastWrapper'>
+        <ToastContainer
+          className='text-sm'
+          position="bottom-center"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="dark"
+        />
       </div>
       {/* <footer className='fixed bottom-0 px-6 py-5 text-sm text-zinc-500 backdrop-blur-lg bg-zinc-950/80 flex z-50 border-1 border-zinc-950 border-b-0 w-full justify-center'>
         <div className='pr-3 border-r border-zinc-800 font-semibold focus-visible:text-zinc-300'>
