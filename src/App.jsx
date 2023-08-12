@@ -4,7 +4,7 @@ import { Route, Link, Routes, useNavigate, useParams } from 'react-router-dom'
 import { LazyLoadImage } from 'react-lazy-load-image-component'
 import YouTube from 'react-youtube'
 // import { MdSkipNext, MdSkipPrevious, MdShuffle, MdPlayArrow, MdPause, MdRepeatOne, MdRepeatOneOn, MdKeyboardArrowDown, MdKeyboardArrowUp } from 'react-icons/md';
-import { RiPlayFill, RiPauseFill, RiSkipBackFill, RiSkipForwardFill, RiShuffleFill, RiRepeat2Fill, RiRepeatOneFill, RiArrowDownSFill, RiArrowUpSFill, RiArrowDownSLine, RiArrowLeftSLine, RiMoreLine, RiAddLine, RiGithubLine, RiExternalLinkLine, RiGroupLine, RiPlayListAddLine } from "react-icons/ri";
+import { RiPlayFill, RiPauseFill, RiSkipBackFill, RiSkipForwardFill, RiShuffleFill, RiRepeat2Fill, RiRepeatOneFill, RiArrowDownSFill, RiArrowUpSFill, RiArrowDownSLine, RiArrowLeftSLine, RiMoreLine, RiAddLine, RiGithubLine, RiExternalLinkLine, RiGroupLine, RiPlayListAddLine, RiCloseFill } from "react-icons/ri";
 import LoadingBar from 'react-top-loading-bar'
 import { socket } from './socket'
 import { ToastContainer, toast } from 'react-toastify'
@@ -112,7 +112,7 @@ function SelectPlaylistPage({playlists, syncPlaylists, setPlaylist}) {
   )
 }
 
-function PlaylistQueue({queue, videos, index, onClick}) {
+function PlaylistQueue({queue, videos, index, onClick, onRemove}) {
   const BEHIND = 1, AHEAD = 23;
   const [center, setCenter] = useState();
   useEffect(() => {
@@ -133,29 +133,44 @@ function PlaylistQueue({queue, videos, index, onClick}) {
         return (
           <button key={videoId}
             className={classNames(
-              'active:opacity-50 active:scale-95 duration-100 ease-in-out mb-px last:mb-0 py-4 px-6 sm:px-6 lg:px-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 focus-visible:z-10 rounded-none sm:rounded-md lg:rounded-md',
+              'group active:opacity-50 active:scale-95 duration-100 ease-in-out mb-px last:mb-0 px-6 sm:px-6 lg:px-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 focus-visible:z-10 rounded-none sm:rounded-md lg:rounded-md',
               index == i ? 'bg-zinc-900' : 'bg-zinc-950',
             )}
             onClick={() => onClick(i)}
           >
-            <div className='flex items-center space-x-3'>
-              <div className='relative'>
-                <div className={classNames(
-                  'absolute bg-zinc-900/60 w-full h-full flex items-center justify-center duration-100',
-                  index == i ? 'opacity-100' : 'opacity-0',
-                )}>
-                  <RiPlayFill className='w-6 h-6 text-zinc-50 drop-shadow-sm'/>
+            <div className='flex flex-1 items-center space-x-3'>
+              <div className='py-4'>
+                <div className='relative'>
+                  <div className={classNames(
+                    'absolute bg-zinc-900/60 w-full h-full flex items-center justify-center duration-100',
+                    index == i ? 'opacity-100' : 'opacity-0',
+                  )}>
+                    <RiPlayFill className='w-6 h-6 text-zinc-50 drop-shadow-sm'/>
+                  </div>
+                  <LazyLoadImage
+                    className='h-7 aspect-video rounded-sm'
+                    src={video.thumbnails.small}
+                  />
                 </div>
-                <LazyLoadImage
-                  className='h-7 aspect-video rounded-sm'
-                  src={video.thumbnails.small}
-                />
               </div>
-              <div className='inline-flex flex-col flex-1 truncate'>
+              <div className='py-4 inline-flex flex-col flex-1 truncate'>
                 <h1 className='truncate text-xs text-left flex-1 text-zinc-300'>{video.title}</h1>
                 <span className='truncate text-xs text-left text-zinc-500'>{video.channel}</span>
               </div>
-              <div className='pl-2 text-xs text-zinc-500 text-left'>{i+1}</div>
+              <div className='pl-2 text-xs text-zinc-500 text-left group-hover:hidden'>{i+1}</div>
+              {onRemove ? (
+                <button
+                  className='p-4 hidden group-hover:block translate-x-4'
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onRemove(i);
+                  }}
+                >
+                  <RiCloseFill className='text-zinc-500 w-6 h-6'/>
+                </button>
+              ) : (
+                <div className='pl-2 text-xs text-zinc-500 text-left hidden group-hover:block'>{i+1}</div>
+              )}
             </div>
           </button>
         )
@@ -872,6 +887,12 @@ function SessionPage({changePlayerCount}) {
               <PlaylistQueue queue={playback.queue} videos={videos} index={playback.index}
                 onClick={(i) => {
                   socket.emit('select_video', {
+                    stream_id: streamId.current,
+                    video_id: playback.queue[i],
+                  })
+                }}
+                onRemove={(i) => {
+                  socket.emit('remove_video', {
                     stream_id: streamId.current,
                     video_id: playback.queue[i],
                   })
