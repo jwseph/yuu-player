@@ -57,7 +57,7 @@ function SelectPlaylistPage({playlists, syncPlaylists, setPlaylist}) {
   return (
     <div className="w-full max-w-3xl py-12 px-6 sm:px-6 lg:px-6 space-y-6 mb-8">
       <div className='flex justify-between items-center text-zinc-200'>
-        <Link to='/s' className='w-10 h-10 -mr-3 flex justify-center items-center active:opacity-50 active:scale-95 duration-100 ease-in-out'>
+        <Link to={`/s/${0|1e6*Math.random()}`} className='w-10 h-10 -mr-3 flex justify-center items-center active:opacity-50 active:scale-95 duration-100 ease-in-out'>
           <RiGroupLine className='w-5 h-5'/>
         </Link>
         <div>
