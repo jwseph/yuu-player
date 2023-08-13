@@ -1044,7 +1044,7 @@ function ImportPage({playlists, updatePlaylists}) {
                 Reset a playlist.
               </p>
               <p className='md:px-4 text-xs text-zinc-500'>
-                Unlike "Update playlist", this resets the metadata of existing videos.
+                Unlike "Add / Update", this resets the metadata of existing videos, making it slower.
               </p>
             </div>
           </div>
