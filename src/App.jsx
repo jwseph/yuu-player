@@ -1012,15 +1012,16 @@ function ImportPage({playlists, updatePlaylists}) {
             <button className="relative flex w-full justify-center rounded-md bg-red-700 py-2 px-3 text-sm font-medium text-red-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 active:opacity-50 active:scale-95 duration-100 ease-in-out"
               onClick={async () => {
                 let playlistId = getPlaylistId(playlistUrl);
-                fetch(BASE+'import?playlist_id='+playlistId, {method: 'POST'});
+                fetch(BASE+'update?playlist_id='+playlistId, {method: 'POST'});
                 await updatePlaylistInfo(playlists, updatePlaylists, playlistId);
+                navigate('/');
               }}
             >
-              New playlist
+              Add / Update
             </button>
             <div className='py-3 space-y-2'>
               <p className='md:px-4 text-xs text-zinc-500'>
-                Choose this option if this is your first time using this playlist with Yuu (on any device)
+                Add a new playlist or update an existing one.
               </p>
               <p className='md:px-4 text-xs text-zinc-500'>
                 The playlist must be public.
@@ -1031,16 +1032,21 @@ function ImportPage({playlists, updatePlaylists}) {
             <button className="relative flex w-full justify-center rounded-md bg-zinc-800 py-2 px-3 text-sm font-medium text-zinc-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 active:opacity-50 active:scale-95 duration-100 ease-in-out"
               onClick={async () => {
                 let playlistId = getPlaylistId(playlistUrl);
-                fetch(BASE+'update?playlist_id='+playlistId, {method: 'POST'});
+                fetch(BASE+'import?playlist_id='+playlistId, {method: 'POST'});
                 await updatePlaylistInfo(playlists, updatePlaylists, playlistId);
                 navigate('/');
               }}
             >
-              Update playlist
+              Reset
             </button>
-            <p className='md:px-4 py-3 text-xs text-zinc-500'>
-              Choose this option if you have imported the playlist before (on any device)
-            </p>
+            <div className='py-3 space-y-2'>
+              <p className='md:px-4 text-xs text-zinc-500'>
+                Reset a playlist.
+              </p>
+              <p className='md:px-4 text-xs text-zinc-500'>
+                Unlike "Update playlist", this resets the metadata of existing videos.
+              </p>
+            </div>
           </div>
         </div>
       </form>

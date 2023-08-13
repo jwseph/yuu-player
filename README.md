@@ -13,8 +13,7 @@ A YouTube playlist player made with React and Tailwind
   - Firefox + desktop mode on Android
 
 ## Todo
-- Combine "import" and "update" options
-- Improve queue-rendering speed (currently only shows top 70 videos to avoid lag)
+- Improve UI in general
 
 ## Known bugs
 - If you manually end a video while it is loading, the player may begin repeatedly skipping videos
