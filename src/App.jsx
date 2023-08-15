@@ -668,9 +668,7 @@ function SessionPage({changePlayerCount}) {
   }
   const getNext = () => videos[playback.queue[wrapIndex(playback.index+1)]];
   const getPrev = () => videos[playback.queue[wrapIndex(playback.index-1)]];
-  const shuffle = () => {
-    setPlayback({queue: [...shuffleQueue(playback.queue)], index: 0});
-  }
+  const shuffle = () => socket.emit('shuffle', {stream_id: streamId.current});
   const autoNext = useRef();
   useEffect(() => {
     autoNext.current = loopOne ? playCurr : playNext;
