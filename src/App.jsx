@@ -47,6 +47,14 @@ function blendColors(colorA, colorB, amount) {
   return '#'+r+g+b;
 }
 
+function generateSessionId() {
+  let res = '';
+  while (res.length < 6) {
+    res += '0123456789abcdef'[0|16*Math.random()];
+  }
+  return res;
+}
+
 function SelectPlaylistPage({playlists, syncPlaylists, setPlaylist}) {
   useEffect(() => {
     syncPlaylists();
@@ -57,7 +65,7 @@ function SelectPlaylistPage({playlists, syncPlaylists, setPlaylist}) {
   return (
     <div className="w-full max-w-3xl py-12 px-6 sm:px-6 lg:px-6 space-y-6 mb-8">
       <div className='flex justify-between items-center text-zinc-200'>
-        <Link to={`/s/${0|1e6*Math.random()}`} className='w-10 h-10 -mr-3 flex justify-center items-center active:opacity-50 active:scale-95 duration-100 ease-in-out'>
+        <Link to={`/s/${generateSessionId()}`} className='w-10 h-10 -mr-3 flex justify-center items-center active:opacity-50 active:scale-95 duration-100 ease-in-out'>
           <RiGroupLine className='w-5 h-5'/>
         </Link>
         <div>
@@ -419,7 +427,7 @@ function PlayerController({video, playingCallback, playingRef, playerRef, loopOn
             onClick={playPrev}
             disabled={!video}
           >
-            {video && <img className='w-16 scale-150 aspect-video opacity-30 group-active:opacity-100 duration-100 ease-in-out rounded-sm' src={getPrev().thumbnails.small}/>}
+            {video && getPrev() && <img className='w-16 scale-150 aspect-video opacity-30 group-active:opacity-100 duration-100 ease-in-out rounded-sm' src={getPrev().thumbnails.small}/>}
             <RiSkipBackFill className='absolute w-9 h-9 z-20 group-active:opacity-0 group-disabled:opacity-50 drop-shadow-sm duration-100 ease-in-out'/>
           </button>
           <div className='flex-1 max-w-[3rem]'></div>
@@ -436,7 +444,7 @@ function PlayerController({video, playingCallback, playingRef, playerRef, loopOn
             onClick={playNext}
             disabled={!video}
           >
-            {video && <img className='w-16 scale-150 aspect-video opacity-30 group-active:opacity-100 duration-100 ease-in-out rounded-sm' src={getNext().thumbnails.small}/>}
+            {video && getNext() && <img className='w-16 scale-150 aspect-video opacity-30 group-active:opacity-100 duration-100 ease-in-out rounded-sm' src={getNext().thumbnails.small}/>}
             <RiSkipForwardFill className='absolute w-9 h-9 z-20 group-active:opacity-0 group-disabled:opacity-50 drop-shadow-sm duration-100 ease-in-out'/>
           </button>
           <div className='flex-1'></div>
