@@ -3,14 +3,14 @@ A YouTube playlist player made with React and Tailwind
 
 ## Important features
 - True shuffle
-  - YouTube and YouTube Music only shuffle playlists in a range of ±200 from the current video
+  - YouTube and YouTube Music only shuffle playlists in a range of ±200 from the current video.
+- Unavailable video saving
+  - The titles and channels of videos that become unavailable are saved so that the videos don't disappear without a trace.
 - No ads
-- Autoplay
-  - Auto-skips unavailable videos but doesn't hide them
-- Saves playlist queues
-- Plays audio when phone's screen is off
-  - Chrome on iOS
-  - Firefox + desktop mode on Android
+- Playlist progress saving
+- Background playing (when screen is off)
+  - iOS: Chrome
+  - Android: Firefox + desktop mode
 
 ## Todo
 - Improve UI in general
