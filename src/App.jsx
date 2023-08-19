@@ -82,17 +82,11 @@ function SelectPlaylistPage({playlists, syncPlaylists, setPlaylist}) {
           Import a playlist to get started (+)
         </div>
       ) : (
-        <div className='flex flex-col gap-3'>
+        <div className='flex flex-col gap-6'>
           {Object.keys(playlists).map(playlistId => {
             let playlist = playlists[playlistId];
             return (
-              <button key={playlistId} className={'items-center w-full bg-zinc-900 px-6 py-6 flex gap-5 rounded-md shadow-sm opacity-50' + (!playlist?.queue ? ' cursor-default' : ' cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 !opacity-100 active:opacity-50 active:scale-95 duration-100')} tabIndex={!playlist?.queue ? '-1' : '0'}
-                onClick={() => {
-                  if (!playlist.queue) return;
-                  setPlaylist(playlist)
-                  history.replaceState(null, 'Youtube Player', '/play?list='+playlistId);
-                }}
-              >
+              <Link key={playlistId} to={'/play?list='+playlistId} className={'items-center w-full bg-zinc-900 px-6 py-6 flex gap-5 rounded-md shadow-sm opacity-50' + (!playlist?.queue ? ' cursor-default' : ' cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 !opacity-100 active:opacity-50 active:scale-95 duration-100')} tabIndex={!playlist?.queue ? '-1' : '0'}>
                 <div className="aspect-square h-28 relative bg-gradient-to-tr	from-zinc-900 to-zinc-950 rounded-sm shadow-sm overflow-hidden">
                   <div className="absolute inset-0 bg-cover bg-center z-0 duration-200 ease-in-out" style={{backgroundImage: 'url('+playlist.thumbnails.small+')'}}></div>
                 </div>
@@ -111,7 +105,7 @@ function SelectPlaylistPage({playlists, syncPlaylists, setPlaylist}) {
                     <div className='text-sm text-zinc-500 whitespace-pre-line text-left pt-2'>{playlist.description}</div>
                   )}
                 </div>
-              </button>
+              </Link>
             )
           })}
         </div>
@@ -1009,8 +1003,8 @@ function ImportPage({playlists, updatePlaylists}) {
       <form className="mt-8 space-y-8" onSubmit={e => e.preventDefault()}>
         <div className="-space-y-1 rounded-sm shadow-lg">
           <div>
-            <label htmlFor="playlistUrl" className="sr-only">Enter a playlist URL</label>
-            <input onChange={e => setPlaylistUrl(e.target.value.trim())} id="playlistUrl" name="playlistUrl" type="text" autoComplete="off" className="relative block w-full rounded-md border-0 py-1.5 bg-zinc-900 text-zinc-200 ring-1 ring-inset ring-zinc-700 placeholder:text-zinc-500 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-red-600 text-sm shadow-sm leading-6 px-3" placeholder='Enter a playlist URL'/>
+            <label htmlFor="playlistUrl" className="sr-only">Enter a YouTube playlist URL</label>
+            <input onChange={e => setPlaylistUrl(e.target.value.trim())} id="playlistUrl" name="playlistUrl" type="text" autoComplete="off" className="relative block w-full rounded-md border-0 py-1.5 bg-zinc-900 text-zinc-200 ring-1 ring-inset ring-zinc-700 placeholder:text-zinc-500 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-red-600 text-sm shadow-sm leading-6 px-3" placeholder='Enter a YouTube playlist URL'/>
           </div>
         </div>
         <div className='flex gap-6'>
