@@ -59,9 +59,18 @@ function generateSessionId() {
 
 function SelectPlaylistPage({playlists, syncPlaylists, setPlaylist}) {
   useEffect(() => {
-    syncPlaylists();
-    const interval = setInterval(syncPlaylists, 250)
-    return () => clearInterval(interval)
+    let sync = true;
+    let timeout = null;
+    function repeat() {
+      if (!sync) return;
+      syncPlaylists();
+      timeout = setTimeout(repeat, 250);
+    }
+    repeat();
+    return () => {
+      sync = false;
+      clearTimeout(timeout);
+    }
   }, [])
 
   return (
@@ -137,7 +146,7 @@ function PlaylistQueue({queue, videos, index, onClick, onRemove}) {
         return (
           <button key={videoId}
             className={classNames(
-              'group active:opacity-50 active:scale-95 duration-100 ease-in-out mb-px last:mb-0 px-6 sm:px-6 lg:px-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 focus-visible:z-10 rounded-none sm:rounded-md lg:rounded-md',
+              'group active:opacity-50 active:scale-95 duration-100 ease-in-out mb-px last:mb-0 px-6 sm:px-6 lg:px-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 focus-visible:z-20 rounded-none sm:rounded-md lg:rounded-md',
               index == i ? 'bg-zinc-900' : 'bg-zinc-950',
             )}
             onClick={() => onClick(i)}
@@ -200,7 +209,7 @@ function PauseButton({addPlayingListener, onClick, color, video, changePlaying})
         setPlaying(!playing);
         await onClick();
       }}
-      style={{'--darkIconColor': blendColors('#18181b', color, 0.11)}}
+      style={{'--darkIconColor': blendColors('#09090b', color, 0.3)}}
       disabled={!video}
     >
       {!playing ? <RiPlayFill className='w-9 h-9 duration-1000 ease-in-out'/> : <RiPauseFill className='w-9 h-9 duration-1000 ease-in-out'/>}
@@ -424,7 +433,7 @@ function PlayerController({video, playingCallback, playingRef, playerRef, loopOn
             disabled={!video}
           >
             {video && getPrev() && <img className='w-16 scale-150 aspect-video opacity-30 group-active:opacity-100 duration-100 ease-in-out rounded-sm' src={getPrev().thumbnails.small}/>}
-            <RiSkipBackFill className='absolute w-9 h-9 z-20 group-active:opacity-0 group-disabled:opacity-50 drop-shadow-sm duration-100 ease-in-out'/>
+            <RiSkipBackFill className='absolute w-9 h-9 z-30 group-active:opacity-0 group-disabled:opacity-50 drop-shadow-sm duration-100 ease-in-out'/>
           </button>
           <div className='flex-1 max-w-[3rem]'></div>
           <div>
@@ -441,7 +450,7 @@ function PlayerController({video, playingCallback, playingRef, playerRef, loopOn
             disabled={!video}
           >
             {video && getNext() && <img className='w-16 scale-150 aspect-video opacity-30 group-active:opacity-100 duration-100 ease-in-out rounded-sm' src={getNext().thumbnails.small}/>}
-            <RiSkipForwardFill className='absolute w-9 h-9 z-20 group-active:opacity-0 group-disabled:opacity-50 drop-shadow-sm duration-100 ease-in-out'/>
+            <RiSkipForwardFill className='absolute w-9 h-9 z-30 group-active:opacity-0 group-disabled:opacity-50 drop-shadow-sm duration-100 ease-in-out'/>
           </button>
           <div className='flex-1'></div>
           <LoopOneButton loopOne={loopOne} setLoopOne={setLoopOne} video={video} onLoopOneClick={onLoopOneClick}/>
@@ -566,7 +575,7 @@ function PlayerPage({playlist, updatePlaylistLocalStorage, videos, changePlayerC
   return (
     <div className='w-full flex flex-col items-center'>
       <Transition.Root show={menu} as={Fragment}>
-        <Dialog as="div" className="relative z-10" initialFocus={menuCancelRef} onClose={setMenu}>
+        <Dialog as="div" className="relative z-20" initialFocus={menuCancelRef} onClose={setMenu}>
           <Transition.Child
             as={Fragment}
             enter="ease-out duration-300"
@@ -579,7 +588,7 @@ function PlayerPage({playlist, updatePlaylistLocalStorage, videos, changePlayerC
             <div className='fixed inset-0 bg-zinc-900/40 backdrop-blur-2xl transition-opacity'/>
           </Transition.Child>
 
-          <div className="fixed inset-0 z-10 overflow-y-auto">
+          <div className="fixed inset-0 z-20 overflow-y-auto">
             <div className="flex min-h-full items-start justify-center text-center overflow-hidden">
               <Transition.Child
                 as={Fragment}
@@ -640,13 +649,11 @@ function PlayerPage({playlist, updatePlaylistLocalStorage, videos, changePlayerC
         </Dialog>
       </Transition.Root>
       <div className="w-full space-y-8 text-zinc-50">
-        <div className='flex flex-col' style={{'--accentColor': color}}>
-          {/* <div className={classNames('fixed top-0 bottom-0 left-0 right-0 z-30 duration-300 backdrop-blur-3xl', menu ? '' : 'opacity-0 pointer-events-none')}>
-
-          </div> */}
-          <div className='bg-[var(--accentColor)] duration-1000 ease-in-out shadow-sm'>
-            <div className='min-h-[100svh] flex flex-col items-center bg-gradient-to-b from-zinc-900/30 to-zinc-900/80 duration-1000 ease-in-out'>
-              <div className='max-w-3xl w-full inline-flex flex-1 flex-col justify-between gap-12 pt-16 pb-20 z-10'>
+        <div className='flex flex-col'>
+          <div className='relative text-center duration-1000 ease-in-out shadow-sm z-10'>
+            <img className='absolute min-w-full min-h-[90%]' src={video.thumbnails.small}/>
+            <div className='text-left z-10 min-h-[100svh] flex flex-col items-center backdrop-blur-3xl bg-gradient-to-b from-zinc-950/20 via-zinc-950/60 to-zinc-950'>
+              <div className='max-w-3xl w-full inline-flex flex-1 flex-col justify-between gap-12 pt-16 pb-20 z-20'>
                 <div className='flex justify-between items-center px-6 sm:px-6 lg:px-6'>
                   <Link to='/' className='w-10 h-10 -ml-3 flex justify-center items-center active:opacity-50 active:scale-95 duration-100 ease-in-out' onClick={changePlayerCount}>
                     <RiArrowLeftSLine className='w-7 h-7'/>
@@ -659,9 +666,6 @@ function PlayerPage({playlist, updatePlaylistLocalStorage, videos, changePlayerC
                       {playlist.channel}
                     </div>
                   </div>
-                  {/* <a target='_blank' href={`https://www.youtube.com/watch?v=${getVideoId(video.video_url)}&list=${playlistId}`} className='w-10 h-10 -mr-3 flex justify-center items-center active:opacity-50 active:scale-95 duration-100 ease-in-out'>
-                    <RiExternalLinkLine className='w-5 h-5'/>
-                  </a> */}
                   <button onClick={() => setMenu(true)} className='w-10 h-10 -mr-3 flex justify-center items-center active:opacity-50 active:scale-95 duration-100 ease-in-out'>
                     <RiMore2Fill className='w-5 h-5'/>
                   </button>
@@ -690,10 +694,6 @@ function PlayerPage({playlist, updatePlaylistLocalStorage, videos, changePlayerC
 
               </div>
             </div>
-            <div
-              className='w-full h-px bg-[var(--borderColor)] duration-1000 ease-in-out'
-              style={{'--borderColor': blendColors('#18181b', color, 0.3)}}
-            ></div>
           </div>
           <div className='flex flex-col items-center'>
             <div className='max-w-3xl w-full py-8'>
@@ -903,10 +903,11 @@ function SessionPage({changePlayerCount}) {
   return (
     <div className='w-full flex flex-col items-center'>
       <div className="w-full space-y-8 text-zinc-50">
-        <div className='flex flex-col' style={{'--accentColor': color}}>
-          <div className='bg-[var(--accentColor)] duration-1000 ease-in-out shadow-sm'>
-            <div className='min-h-[100svh] flex flex-col items-center bg-gradient-to-b from-zinc-900/30 to-zinc-900/80 duration-1000 ease-in-out'>
-              <div className='max-w-3xl w-full inline-flex flex-1 flex-col justify-between gap-12 pt-16 pb-20 z-10'>
+        <div className='flex flex-col'>
+          <div className='relative text-center duration-1000 ease-in-out shadow-sm z-10'>
+            <img className='absolute min-w-full min-h-[90%]' src={video.thumbnails.small}/>
+            <div className='text-left z-10 min-h-[100svh] flex flex-col items-center backdrop-blur-3xl bg-gradient-to-b from-zinc-950/20 via-zinc-950/60 to-zinc-950'>
+              <div className='max-w-3xl w-full inline-flex flex-1 flex-col justify-between gap-12 pt-16 pb-20 z-20'>
                 <div className='flex justify-between items-center px-6 sm:px-6 lg:px-6'>
                   <Link to='/' className='w-10 h-10 -ml-3 flex justify-center items-center active:opacity-50 active:scale-95 duration-100 ease-in-out' onClick={changePlayerCount}>
                     <RiArrowLeftSLine className='w-7 h-7'/>
@@ -971,10 +972,6 @@ function SessionPage({changePlayerCount}) {
 
               </div>
             </div>
-            <div
-              className='w-full h-px bg-[var(--borderColor)] duration-1000 ease-in-out'
-              style={{'--borderColor': blendColors('#18181b', color, 0.3)}}
-            ></div>
           </div>
           <div className='flex flex-col items-center'>
             <div className='max-w-3xl w-full py-8'>
@@ -1098,7 +1095,7 @@ function ImportPage({playlists, updatePlaylists}) {
         <div className="-space-y-1 rounded-sm shadow-lg">
           <div>
             <label htmlFor="playlistUrl" className="sr-only">Enter a YouTube playlist URL</label>
-            <input onChange={e => setPlaylistUrl(e.target.value.trim())} id="playlistUrl" name="playlistUrl" type="text" autoComplete="off" className="relative block w-full rounded-md border-0 py-1.5 bg-zinc-900 text-zinc-200 ring-1 ring-inset ring-zinc-700 placeholder:text-zinc-500 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-red-600 text-sm shadow-sm leading-6 px-3" placeholder='Enter a YouTube playlist URL'/>
+            <input onChange={e => setPlaylistUrl(e.target.value.trim())} id="playlistUrl" name="playlistUrl" type="text" autoComplete="off" className="relative block w-full rounded-md border-0 py-1.5 bg-zinc-900 text-zinc-200 ring-1 ring-inset ring-zinc-700 placeholder:text-zinc-500 focus:z-20 focus:ring-2 focus:ring-inset focus:ring-red-600 text-sm shadow-sm leading-6 px-3" placeholder='Enter a YouTube playlist URL'/>
           </div>
         </div>
         <div className='flex gap-6'>
