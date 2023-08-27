@@ -1177,30 +1177,30 @@ function App() {
   }
 
   async function syncPlaylists() {
+    console.log('syncing...')
     for (const playlistId in playlists) {
       const playlist = playlists[playlistId];
-      playlist.index = playlist.index ?? 0;
-      let resp = await fetch(BASE+'get_video_ids?playlist_id='+playlistId);
-      let {videoIds: newVideoIds, removedVideoIds} = await resp.json();
-      removedVideoIds = removedVideoIds ?? {};
-      if (newVideoIds == null) continue;
       playlist.queue = playlist.queue ?? [];
-      const oldVideoIds = playlist.videoIds = playlist.videoIds ?? {};
-      for (const videoId in oldVideoIds) delete newVideoIds[videoId];
-      let watchingVideoId = playlist.queue[playlist.index];
-      playlist.queue = Object.keys(newVideoIds).concat(playlist.queue);
-      playlist.queue = playlist.queue.filter((videoId) => !(videoId in removedVideoIds));
-      playlist.index = Math.max(0, playlist.queue.indexOf(watchingVideoId));
-      playlist.videoIds = newVideoIds;
-      playlist.removedVideoIds = removedVideoIds;
+      let indexVideoId = playlist.queue[playlist.index ?? 0] ?? '';
+      let resp = await fetch(BASE+'get_video_ids?playlist_id='+playlistId);
+      // console.log(await resp.json());
+      // continue;
+      let {videoIds, removedVideoIds} = await resp.json();
+      if (videoIds == null) continue;
+      removedVideoIds = removedVideoIds ?? {};
+      console.log(playlist.title)
+      console.log(Object.keys(videoIds).length, Object.keys(removedVideoIds).length);
 
-      // Remove from queue video ids that were removed from the playlist
-      let size = 0;
-      for (let i in playlist.queue) {
-        if (!playlist.videoIds[playlist.queue[i]]) continue;
-        playlist.queue[size++] = playlist.queue[i];
+      let newVideoIds = {...videoIds};
+      for (const videoId of playlist.queue) {
+        delete newVideoIds[videoId];
       }
-      playlist.queue.length = size;
+      playlist.queue = Object.keys(newVideoIds).concat(playlist.queue);
+      // Filter by `not in removedVideoIds` instead of `in videoIds` as a safety in case videoId was removed from videoIds but not added to removedVideoIds.
+      playlist.queue = playlist.queue.filter((videoId) => !removedVideoIds?.[videoId]);
+      playlist.index = Math.max(0, playlist.queue.indexOf(indexVideoId));
+      playlist.videoIds = videoIds;
+      playlist.removedVideoIds = removedVideoIds;
     }
     updatePlaylists();
   }
