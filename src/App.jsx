@@ -369,6 +369,7 @@ function PlayerBar({playerRef, video, onDragStop}) {
 }
 
 function PlayerController({video, playingCallback, playingRef, playerRef, loopOne, setLoopOne, onLoopOneClick, playPrev, playNext, getPrev, getNext, shuffle, color, onDragStop, changePlaying}) {
+  console.log('video=', video)
   const [description, setDescription] = useState(false);
   const [channelImage, setChannelImage] = useState();
   const [channelSubscribers, setChannelSubscribers] = useState('');
@@ -390,6 +391,7 @@ function PlayerController({video, playingCallback, playingRef, playerRef, loopOn
     playingRef.current = !playingRef.current;
   }
   function handleKeyPressed(e) {
+    if (!video) return;
     if (e.key == ' ') {
       e.preventDefault();
       togglePlaying();
@@ -514,11 +516,18 @@ function PlayerPage({playlist, updatePlaylistLocalStorage, videos, changePlayerC
       setIndex(playlist.index);
       return;
     }
-    setQueue(Object.keys(playlist.removedVideoIds));
+    let newQueue = Object.keys(playlist.removedVideoIds);
+    setQueue(newQueue);
     setIndex(0);
+    setVideo(newQueue?.[0] ?? 0);
   }, [showRemoved])
   useEffect(() => {
     if (!showRemoved) updatePlaylistLocalStorage(queue, index);
+    if (!queue.length) {
+      setVideo(null);
+      playerRef.current.internalPlayer.pauseVideo();
+      return;
+    }
     setVideo({...videos[queue[index]]});
     playerRef.current.internalPlayer.loadVideoById(queue[index]);
   }, [queue, index, showRemoved])
@@ -565,6 +574,7 @@ function PlayerPage({playlist, updatePlaylistLocalStorage, videos, changePlayerC
     }}
   />, [])
   async function updateColor() {
+    console.log('updateColor', video)
     let image = video.thumbnails.small;
     let r = await fetch(BASE+'get_color?image_url='+encodeURIComponent(image))
     let newColor = await r.json();
@@ -614,7 +624,7 @@ function PlayerPage({playlist, updatePlaylistLocalStorage, videos, changePlayerC
                     <div className='overflow-y-scroll -mx-6 flex flex-col items-start text-md pointer-events-auto' onClick={() => setMenu(false)}>
                       {/* <MenuLink setMenuOpen={setMenuOpen} href='#' text='Top'/> */}
                       {/* <MenuLink setMenuOpen={setMenuOpen} href='#members' text='Members'/> */}
-                      <a target='_blank' className='w-full px-6 flex gap-4 items-center active:opacity-50 active:scale-95 duration-100 ease-in-out' href={`https://www.youtube.com/watch?v=${getVideoId(video.video_url)}&list=${playlistId}`}>
+                      <a target='_blank' className='w-full px-6 flex gap-4 items-center active:opacity-50 active:scale-95 duration-100 ease-in-out' href={`https://www.youtube.com/watch?v=${getVideoId(video?.video_url)}&list=${playlistId}`}>
                         <RiExternalLinkLine className='text-zinc-400 w-5 h-5'/>
                         <div className='text-zinc-200 flex-1 py-3 text-left'>
                           Open in YouTube
@@ -651,7 +661,7 @@ function PlayerPage({playlist, updatePlaylistLocalStorage, videos, changePlayerC
       <div className="w-full space-y-8 text-zinc-50">
         <div className='flex flex-col'>
           <div className='relative text-center duration-1000 ease-in-out shadow-sm z-10'>
-            <img className='absolute min-w-full min-h-[90%]' src={video.thumbnails.small}/>
+            <img className='absolute min-w-full min-h-[90%] bg-zinc-900' src={video?.thumbnails?.small ?? ''}/>
             <div className='text-left z-10 min-h-[100svh] flex flex-col items-center backdrop-blur-3xl bg-gradient-to-b from-zinc-950/20 via-zinc-950/60 to-zinc-950'>
               <div className='max-w-3xl w-full inline-flex flex-1 flex-col justify-between gap-12 pt-16 pb-20 z-20'>
                 <div className='flex justify-between items-center px-6 sm:px-6 lg:px-6'>
@@ -672,6 +682,11 @@ function PlayerPage({playlist, updatePlaylistLocalStorage, videos, changePlayerC
                 </div>
                 <div className='px-6 sm:px-6 lg:px-6'>
                   <div id='videoContainer' className='w-full aspect-video rounded-md shadow-2xl overflow-hidden group'>
+                    {!video && <div className='w-full h-full bg-zinc-800'>
+                      <div className='w-full h-full p-[20%] flex justify-center items-center'>
+                        <RiPlayListAddLine className='h-full aspect-square flex-1 text-zinc-700'/>
+                      </div>
+                    </div>}
                     {youtubePlayer}
                   </div>
                 </div>
@@ -733,6 +748,7 @@ function SessionPage({changePlayerCount}) {
   useEffect(() => {
     if (!videoId) {
       setVideo(null);
+      playerRef.current.internalPlayer.pauseVideo();
       return;
     }
     setVideo({...videos[videoId]});
@@ -905,7 +921,7 @@ function SessionPage({changePlayerCount}) {
       <div className="w-full space-y-8 text-zinc-50">
         <div className='flex flex-col'>
           <div className='relative text-center duration-1000 ease-in-out shadow-sm z-10'>
-            <img className='absolute min-w-full min-h-[90%]' src={video.thumbnails.small}/>
+            <img className='absolute min-w-full min-h-[90%] bg-zinc-900' src={video?.thumbnails?.small ?? ''}/>
             <div className='text-left z-10 min-h-[100svh] flex flex-col items-center backdrop-blur-3xl bg-gradient-to-b from-zinc-950/20 via-zinc-950/60 to-zinc-950'>
               <div className='max-w-3xl w-full inline-flex flex-1 flex-col justify-between gap-12 pt-16 pb-20 z-20'>
                 <div className='flex justify-between items-center px-6 sm:px-6 lg:px-6'>
