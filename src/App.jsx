@@ -353,7 +353,7 @@ function PlayerBar({playerRef, video, onDragStop}) {
         >
           <div className='w-full h-full flex items-center'>
             <div className='h-1 bg-zinc-50 rounded-full' style={{width: time/duration*100+'%'}}></div>
-            <div className={'rounded-full bg-zinc-50 duration-75 ease-in-out'+(!dragging.current || endingDragging.current ? ' w-3 h-3 -ml-1.5' : ' w-4 h-4 -ml-2')}></div>
+            <div className={'rounded-full bg-zinc-50 duration-75 ease-in-out'+(!dragging.current || endingDragging.current ? ' w-0 h-0 -ml-0' : ' w-4 h-4 -ml-2')}></div>
           </div>
         </div>
       </div>
