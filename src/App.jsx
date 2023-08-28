@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef, useMemo, Fragment } from 'react'
 import './App.css'
-import { Route, Link, Routes, useNavigate, useParams } from 'react-router-dom'
+import { Route, Link, Routes, useNavigate, useParams, matchRoutes } from 'react-router-dom'
 import { LazyLoadImage } from 'react-lazy-load-image-component'
 import YouTube from 'react-youtube'
 // import { MdSkipNext, MdSkipPrevious, MdShuffle, MdPlayArrow, MdPause, MdRepeatOne, MdRepeatOneOn, MdKeyboardArrowDown, MdKeyboardArrowUp } from 'react-icons/md';
-import { RiPlayFill, RiPauseFill, RiSkipBackFill, RiSkipForwardFill, RiShuffleFill, RiRepeat2Fill, RiRepeatOneFill, RiArrowDownSFill, RiArrowUpSFill, RiArrowDownSLine, RiArrowLeftSLine, RiMoreLine, RiAddLine, RiGithubLine, RiExternalLinkLine, RiGroupLine, RiPlayListAddLine, RiCloseFill, RiMore2Fill, RiEyeLine, RiEyeOffLine } from "react-icons/ri";
+import { RiPlayFill, RiPauseFill, RiSkipBackFill, RiSkipForwardFill, RiShuffleFill, RiRepeat2Fill, RiRepeatOneFill, RiArrowDownSFill, RiArrowUpSFill, RiArrowDownSLine, RiArrowLeftSLine, RiMoreLine, RiAddLine, RiGithubLine, RiExternalLinkLine, RiGroupLine, RiPlayListAddLine, RiCloseFill, RiMore2Fill, RiEyeLine, RiEyeOffLine, RiRefreshLine, RiDownloadLine } from "react-icons/ri";
 import LoadingBar from 'react-top-loading-bar'
 import { socket } from './socket'
 import { ToastContainer, toast } from 'react-toastify'
@@ -31,14 +31,6 @@ const shuffleQueue = (queue) => {
   return queue;
 }
 
-const updatePlaylistInfo = async (playlists, updatePlaylists, playlistId) => {
-  // console.log(BASE+'get_playlist_info?playlist_id='+playlistId)
-  let resp = await fetch(BASE+'get_playlist_info?playlist_id='+playlistId);
-  let playlist = await resp.json();
-  playlists[playlistId] = {...playlists[playlistId] || {}, ...playlist};
-  updatePlaylists();
-}
-
 function blendColors(colorA, colorB, amount) {
   // Source: https://stackoverflow.com/questions/6367010/average-2-hex-colors-together-in-javascript
   const [rA, gA, bA] = colorA.match(/\w\w/g).map((c) => parseInt(c, 16));
@@ -57,7 +49,10 @@ function generateSessionId() {
   return res;
 }
 
-function SelectPlaylistPage({playlists, syncPlaylists, setPlaylist}) {
+function SelectPlaylistPage({playlists, syncPlaylists}) {
+  useEffect(() => {
+    document.title = 'Select a playlist · Yuu';
+  }, [])
   useEffect(() => {
     let sync = true;
     let timeout = null;
@@ -152,13 +147,14 @@ function PlaylistQueue({queue, videos, index, onClick, onRemove}) {
             onClick={() => onClick(i)}
           >
             <div className='flex flex-1 items-center space-x-3'>
+              <div className='-ml-6 w-10 text-xs text-zinc-500 text-right'>{i+1}</div>
               <div className='py-4'>
                 <div className='relative'>
                   <div className={classNames(
-                    'absolute bg-zinc-900/60 w-full h-full flex items-center justify-center duration-100',
+                    'absolute bg-zinc-900/50 w-full h-full flex items-center justify-center duration-100',
                     index == i ? 'opacity-100' : 'opacity-0',
                   )}>
-                    <RiPlayFill className='w-6 h-6 text-zinc-50 drop-shadow-sm'/>
+                    <RiPlayFill className='w-6 h-6 text-zinc-50/75 drop-shadow-sm'/>
                   </div>
                   <LazyLoadImage
                     className='h-7 aspect-video rounded-sm'
@@ -170,7 +166,7 @@ function PlaylistQueue({queue, videos, index, onClick, onRemove}) {
                 <h1 className='truncate text-xs text-left flex-1 text-zinc-300'>{video.title}</h1>
                 <span className='truncate text-xs text-left text-zinc-500'>{video.channel}</span>
               </div>
-              <div className='pl-2 text-xs text-zinc-500 text-left group-hover:hidden'>{i+1}</div>
+              {/* <div className='pl-2 text-xs text-zinc-500 text-left group-hover:hidden'>{i+1}</div> */}
               {onRemove ? (
                 <button
                   className='p-4 hidden group-hover:block translate-x-4'
@@ -182,7 +178,8 @@ function PlaylistQueue({queue, videos, index, onClick, onRemove}) {
                   <RiCloseFill className='text-zinc-500 w-6 h-6'/>
                 </button>
               ) : (
-                <div className='pl-2 text-xs text-zinc-500 text-left hidden group-hover:block'>{i+1}</div>
+                <></>
+                // <div className='pl-2 text-xs text-zinc-500 text-left hidden group-hover:block'>{i+1}</div>
               )}
             </div>
           </button>
@@ -209,7 +206,7 @@ function PauseButton({addPlayingListener, onClick, color, video, changePlaying})
         setPlaying(!playing);
         await onClick();
       }}
-      style={{'--darkIconColor': blendColors('#09090b', color, 0.3)}}
+      style={{'--darkIconColor': blendColors('#09090b', color, 0.1)}}
       disabled={!video}
     >
       {!playing ? <RiPlayFill className='w-9 h-9 duration-1000 ease-in-out'/> : <RiPauseFill className='w-9 h-9 duration-1000 ease-in-out'/>}
@@ -361,7 +358,7 @@ function PlayerBar({playerRef, video, onDragStop}) {
         </div>
       </div>
       <div className='w-full flex justify-between'>
-        <div className='text-xs font-light'>{formatTime(time|0)}</div>
+        <div className='text-xs font-light'>{video ? formatTime(time|0) : '0:00'}</div>
         <div className='text-xs font-light'>{'-'+formatTime(duration-time|0)}</div>
       </div>
     </div>
@@ -369,7 +366,6 @@ function PlayerBar({playerRef, video, onDragStop}) {
 }
 
 function PlayerController({video, playingCallback, playingRef, playerRef, loopOne, setLoopOne, onLoopOneClick, playPrev, playNext, getPrev, getNext, shuffle, color, onDragStop, changePlaying}) {
-  console.log('video=', video)
   const [description, setDescription] = useState(false);
   const [channelImage, setChannelImage] = useState();
   const [channelSubscribers, setChannelSubscribers] = useState('');
@@ -494,7 +490,7 @@ function PlayerController({video, playingCallback, playingRef, playerRef, loopOn
   )
 }
 
-function PlayerPage({playlist, updatePlaylistLocalStorage, videos, changePlayerCount, playlistId}) {
+function PlayerPage({playlist, updatePlaylist, resetPlaylist, updatePlaylistLocalStorage, videos, playlistId}) {
   const [queue, setQueue] = useState([...playlist.queue]);
   const [index, setIndex] = useState(playlist.index);
   const [video, setVideo] = useState({...videos[queue[index]]});
@@ -609,44 +605,68 @@ function PlayerPage({playlist, updatePlaylistLocalStorage, videos, changePlayerC
                 leaveFrom="opacity-100 translate-y-0 scale-100"
                 leaveTo="opacity-0 translate-y-4 lg:translate-y-0 lg:scale-110"
               >
-                <Dialog.Panel className="relative transform text-left transition-all py-20 px-6 lg:px-6 w-full h-screen max-w-3xl max-h-[100dvh] flex flex-col gap-12 pointer-events-none">
-                  <div className='flex-1 flex flex-col justify-center gap-12'>
-                    <div className='flex flex-col items-center space-y-7'>
-                      <div className='px-8 flex flex-col items-center'>
-                        <img className='w-full h-full max-w-sm rounded-md' src={playlist.thumbnails.large}/>
-                      </div>
-                      <div className='flex flex-col items-center gap-1'>
-                        <h2 className='text-zinc-200 text-xl font-semibold tracking-tight truncate max-w-full'>
-                          {playlist.title}
-                        </h2>
-                      </div>
+                <Dialog.Panel className="relative transform text-left transition-all py-16 px-6 lg:px-6 w-full h-screen max-w-3xl max-h-[100dvh] flex flex-col pointer-events-none">
+                  <div className='flex-1'></div>
+                  <div className='flex flex-col items-center space-y-7'>
+                    <div className='px-8 flex flex-col items-center'>
+                      <img className='w-full h-full max-w-sm rounded-md' src={playlist.thumbnails.large}/>
                     </div>
-                    <div className='overflow-y-scroll -mx-6 flex flex-col items-start text-md pointer-events-auto' onClick={() => setMenu(false)}>
-                      {/* <MenuLink setMenuOpen={setMenuOpen} href='#' text='Top'/> */}
-                      {/* <MenuLink setMenuOpen={setMenuOpen} href='#members' text='Members'/> */}
-                      <a target='_blank' className='w-full px-6 flex gap-4 items-center active:opacity-50 active:scale-95 duration-100 ease-in-out' href={`https://www.youtube.com/watch?v=${getVideoId(video?.video_url)}&list=${playlistId}`}>
-                        <RiExternalLinkLine className='text-zinc-400 w-5 h-5'/>
-                        <div className='text-zinc-200 flex-1 py-3 text-left'>
-                          Open in YouTube
-                        </div>
-                      </a>
-                      {showRemoved ? (
-                        <button onClick={() => setShowRemoved(false)} className='w-full px-6 flex gap-4 items-center active:opacity-50 active:scale-95 duration-100 ease-in-out'>
-                          <RiEyeOffLine className='text-zinc-400 w-5 h-5'/>
-                          <div className='text-zinc-200 flex-1 py-4 text-left'>
-                            Hide removed videos
-                          </div>
-                        </button>
-                      ) : (
-                        <button onClick={() => setShowRemoved(true)} className='w-full px-6 flex gap-4 items-center active:opacity-50 active:scale-95 duration-100 ease-in-out'>
-                          <RiEyeLine className='text-zinc-400 w-5 h-5'/>
-                          <div className='text-zinc-200 flex-1 py-4 text-left'>
-                            View removed videos
-                          </div>
-                        </button>
-                      )}
+                    <div className='flex flex-col items-center gap-1'>
+                      <h2 className='text-zinc-200 text-xl font-semibold tracking-tight truncate max-w-full'>
+                        {playlist.title}
+                      </h2>
                     </div>
                   </div>
+                  <div className='h-8'></div>
+                  <div className='overflow-y-scroll -mx-6 flex flex-col items-start text-md pointer-events-auto' onClick={() => setMenu(false)}>
+                    {/* <MenuLink setMenuOpen={setMenuOpen} href='#' text='Top'/> */}
+                    {/* <MenuLink setMenuOpen={setMenuOpen} href='#members' text='Members'/> */}
+                    <a target='_blank' className='w-full px-6 flex gap-4 items-center active:opacity-50 active:scale-95 duration-100 ease-in-out' href={`https://www.youtube.com/watch?v=${getVideoId(video?.video_url)}&list=${playlistId}`}>
+                      <RiExternalLinkLine className='text-zinc-400 w-5 h-5'/>
+                      <div className='text-zinc-200 flex-1 py-4 text-left'>
+                        Open in YouTube
+                      </div>
+                    </a>
+                    {showRemoved ? (
+                      <button onClick={() => setShowRemoved(false)} className='w-full px-6 flex gap-4 items-center active:opacity-50 active:scale-95 duration-100 ease-in-out'>
+                        <RiEyeOffLine className='text-zinc-400 w-5 h-5'/>
+                        <div className='text-zinc-200 flex-1 py-4 text-left'>
+                          Hide removed videos
+                        </div>
+                      </button>
+                    ) : (
+                      <button onClick={() => setShowRemoved(true)} className='w-full px-6 flex gap-4 items-center active:opacity-50 active:scale-95 duration-100 ease-in-out'>
+                        <RiEyeLine className='text-zinc-400 w-5 h-5'/>
+                        <div className='text-zinc-200 flex-1 py-4 text-left'>
+                          View removed videos
+                        </div>
+                      </button>
+                    )}
+                    <button className='w-full px-6 flex gap-4 items-center active:opacity-50 active:scale-95 duration-100 ease-in-out'
+                      onClick={async () => {
+                        await updatePlaylist(location.href);
+                        location.reload();
+                      }}
+                    >
+                      <RiDownloadLine className='text-zinc-400 w-5 h-5'/>
+                      <div className='text-zinc-200 flex-1 py-4 text-left'>
+                        Update playlist
+                      </div>
+                    </button>
+                    <button className='w-full px-6 flex gap-4 items-center active:opacity-50 active:scale-95 duration-100 ease-in-out'
+                      onClick={async () => {
+                        await resetPlaylist(location.href);
+                        location.reload();
+                      }}
+                    >
+                      <RiRefreshLine className='text-zinc-400 w-5 h-5'/>
+                      <div className='text-zinc-200 flex-1 py-4 text-left'>
+                        Reset playlist
+                      </div>
+                    </button>
+                  </div>
+                  <div className='h-8'></div>
+                  <div className='flex-1'></div>
                   <button onClick={() => setMenu(false)} className='pointer-events-auto w-full flex gap-4 items-center active:opacity-50 active:scale-95 duration-100 ease-in-out'>
                     <div className='text-zinc-200 flex-1 text-center'>
                       Close
@@ -661,11 +681,11 @@ function PlayerPage({playlist, updatePlaylistLocalStorage, videos, changePlayerC
       <div className="w-full space-y-8 text-zinc-50">
         <div className='flex flex-col'>
           <div className='relative text-center duration-1000 ease-in-out shadow-sm z-10'>
-            <img className='absolute min-w-full min-h-[90%] bg-zinc-900' src={video?.thumbnails?.small ?? ''}/>
+            <img className='absolute w-full h-[90%] bg-zinc-900' src={video?.thumbnails?.small ?? '/zero.png'}/>
             <div className='text-left z-10 min-h-[100svh] flex flex-col items-center backdrop-blur-3xl bg-gradient-to-b from-zinc-950/20 via-zinc-950/60 to-zinc-950'>
               <div className='max-w-3xl w-full inline-flex flex-1 flex-col justify-between gap-12 pt-16 pb-20 z-20'>
                 <div className='flex justify-between items-center px-6 sm:px-6 lg:px-6'>
-                  <Link to='/' className='w-10 h-10 -ml-3 flex justify-center items-center active:opacity-50 active:scale-95 duration-100 ease-in-out' onClick={changePlayerCount}>
+                  <Link to='/' className='w-10 h-10 -ml-3 flex justify-center items-center active:opacity-50 active:scale-95 duration-100 ease-in-out'>
                     <RiArrowLeftSLine className='w-7 h-7'/>
                   </Link>
                   <div>
@@ -680,11 +700,13 @@ function PlayerPage({playlist, updatePlaylistLocalStorage, videos, changePlayerC
                     <RiMore2Fill className='w-5 h-5'/>
                   </button>
                 </div>
-                <div className='px-6 sm:px-6 lg:px-6'>
+                <div className='px-6 sm:px-16 md:px-24'>
                   <div id='videoContainer' className='w-full aspect-video rounded-md shadow-2xl overflow-hidden group'>
                     {!video && <div className='w-full h-full bg-zinc-800'>
-                      <div className='w-full h-full p-[20%] flex justify-center items-center'>
-                        <RiPlayListAddLine className='h-full aspect-square flex-1 text-zinc-700'/>
+                      <div className='w-full h-full p-[20%] flex flex-col justify-center items-center text-zinc-700'>
+                        <div>
+                          (No removed videos)
+                        </div>
                       </div>
                     </div>}
                     {youtubePlayer}
@@ -721,7 +743,7 @@ function PlayerPage({playlist, updatePlaylistLocalStorage, videos, changePlayerC
   )
 }
 
-function SessionPage({changePlayerCount}) {
+function SessionPage({}) {
   const { session } = useParams();
   const [videos, setVideos] = useState({});
   const [playback, setPlayback] = useState({queue: [], index: 0});
@@ -921,11 +943,11 @@ function SessionPage({changePlayerCount}) {
       <div className="w-full space-y-8 text-zinc-50">
         <div className='flex flex-col'>
           <div className='relative text-center duration-1000 ease-in-out shadow-sm z-10'>
-            <img className='absolute min-w-full min-h-[90%] bg-zinc-900' src={video?.thumbnails?.small ?? ''}/>
+            <img className='absolute w-full h-[90%] bg-zinc-900' src={video?.thumbnails?.small ?? '/zero.png'}/>
             <div className='text-left z-10 min-h-[100svh] flex flex-col items-center backdrop-blur-3xl bg-gradient-to-b from-zinc-950/20 via-zinc-950/60 to-zinc-950'>
               <div className='max-w-3xl w-full inline-flex flex-1 flex-col justify-between gap-12 pt-16 pb-20 z-20'>
                 <div className='flex justify-between items-center px-6 sm:px-6 lg:px-6'>
-                  <Link to='/' className='w-10 h-10 -ml-3 flex justify-center items-center active:opacity-50 active:scale-95 duration-100 ease-in-out' onClick={changePlayerCount}>
+                  <Link to='/' className='w-10 h-10 -ml-3 flex justify-center items-center active:opacity-50 active:scale-95 duration-100 ease-in-out'>
                     <RiArrowLeftSLine className='w-7 h-7'/>
                   </Link>
                   <div>
@@ -942,7 +964,7 @@ function SessionPage({changePlayerCount}) {
                     <RiPlayListAddLine className='w-5 h-5'/>
                   </button>
                 </div>
-                <div className='px-6 sm:px-6 lg:px-6'>
+                <div className='px-6 sm:px-16 md:px-24'>
                   <div id='videoContainer' className='w-full aspect-video rounded-md shadow-2xl overflow-hidden group'>
                     {!video && <div className='w-full h-full bg-zinc-800'>
                       <div className='w-full h-full p-[20%] flex justify-center items-center'>
@@ -1013,80 +1035,97 @@ function SessionPage({changePlayerCount}) {
   )
 }
 
-function PlayerSwitcher({playlists, savePlaylists, syncPlaylists, changePlayerCount}) {
-  const [playlist, setPlaylist] = useState(null);
-  const [videos, setVideos] = useState();
-  useEffect(() => {
-    document.title = 'Select a playlist · Yuu';
-  }, [])
-  return (
-    !playlist?.queue ? (
-      <SelectPlaylistPage setPlaylist={async (playlist) => {
-        let resp = await fetch(BASE+'get_playlist_videos?playlist_id='+getPlaylistId(playlist.url));
-        setVideos(await resp.json());
-        // Maybe show loading bar here
-        setPlaylist(playlist);
-      }} playlists={playlists} syncPlaylists={syncPlaylists}/>
-    ) : (
-      <PlayerPage playlist={playlist} videos={videos} changePlayerCount={changePlayerCount} playlistId={getPlaylistId(playlist.url)} updatePlaylistLocalStorage={(queue, index) => {
-        playlist.queue = queue;
-        playlist.index = index;
-        savePlaylists({[getPlaylistId(playlist.url)]: playlist})
-      }}/>
-    )
-  )
-}
+// function PlayerSwitcher({playlists, setPlaylists, syncPlaylists, changePlayerCount}) {
+//   const [playlist, setPlaylist] = useState(null);
+//   useEffect(() => {
+//     document.title = 'Select a playlist · Yuu';
+//   }, [])
+//   useEffect(() => {
+//     if (!playlist) return;
+//     setPlaylists((playlists) => ({
+//       ...playlists,
+//       [getPlaylistId(playlist.url)]: playlist,
+//     }))
+//   }, [playlist])
+//   return (
+//     !playlist?.queue ? (
+//       <SelectPlaylistPage playlists={playlists} syncPlaylists={syncPlaylists}/>
+//     ) : (
+//       <PlayerPage playlist={playlist} videos={videos} playlistId={getPlaylistId(playlist.url)}
+//         updatePlaylistLocalStorage={(queue, index) => {
+//           setPlaylist({...playlist, queue, index});
+//         }}
+//       />
+//     )
+//   )
+// }
 
-function PlaylistLoadingPage({playlists, savePlaylists, syncPlaylists, changePlayerCount}) {
-  const [playlist, setPlaylist] = useState({});
+function PlaylistLoadingPage({setPlaylists, updatePlaylist, resetPlaylist, loadPlaylistVideos}) {
+  const [playlist, setPlaylist] = useState(null);
   const [videos, setVideos] = useState();
   const loading = useRef(false);
   const [progress, setProgress] = useState(0);
+  const [image, setImage] = useState('');
+  const requestedImage = useRef(false);
+  
   useEffect(() => {
-    async function loadPlaylist() {
-      setProgress(20);
-      const playlistId = getPlaylistId(location.href);
-      let prom;
+    if (requestedImage.current) return;
+    requestedImage.current = true;
+    (async () => {
+      const genres = ['kick', 'happy', 'wink', 'poke', 'dance', 'cringe'];
+      let genre = genres[0|genres.length*Math.random()];
+      let resp = await fetch('https://api.waifu.pics/sfw/'+genre);
+      let data = await resp.json();
+      setImage(data.url);
+    })();
+  }, [])
 
-      if (!(playlistId in playlists)) {
-        prom = (async () => {
-          await updatePlaylistInfo(playlists, savePlaylists, playlistId);
-          await syncPlaylists();
-        })();
-      }
-
-      setVideos(await (await fetch(BASE+'get_playlist_videos?playlist_id='+playlistId)).json());
-      setProgress(60);
-      
-      if (!(playlistId in playlists)) await prom;
-
-      setPlaylist(playlists[playlistId]);
-      loading.current = false;
-      setProgress(100);
-    }
-    if (!playlist?.queue && !loading.current) {
+  useEffect(() => {
+    if (playlist || loading.current) return;
+    (async () => {
       loading.current = true;
-      loadPlaylist();
-    }
+      const data = await loadPlaylistVideos(location.href, setProgress);
+      console.log(data);
+      setPlaylist(data.playlist);
+      setVideos(data.videos);
+    })();
   }, [playlist, videos]);
+
+  useEffect(() => {
+    if (!playlist) return;
+    console.log('setting playlists');
+    setPlaylists((playlists) => ({
+      ...playlists,
+      [getPlaylistId(playlist.url)]: playlist,
+    }))
+  }, [playlist])
 
   return (
     <div className='w-full flex justify-center'>
       <LoadingBar color='#ff0000' progress={progress}/>
-      {!playlist?.queue ? (
-        <div></div>
+      {!playlist ? (
+        <div className='p-16 flex flex-col items-center gap-8'>
+          <img src={image} className='w-full bg-transparent'/>
+          <div className='text-md'>(Loading playlist items, please wait...)</div>
+        </div>
       ) : (
-        <PlayerPage playlist={playlist} videos={videos} changePlayerCount={changePlayerCount} playlistId={getPlaylistId(playlist.url)} updatePlaylistLocalStorage={(queue, index) => {
-          playlist.queue = queue;
-          playlist.index = index;
-          savePlaylists({[getPlaylistId(playlist.url)]: playlist})
-        }}/>
+        <PlayerPage
+          playlist={playlist}
+          videos={videos}
+          playlistId={getPlaylistId(playlist.url)}
+          updatePlaylist={updatePlaylist}
+          resetPlaylist={resetPlaylist}
+          updatePlaylistLocalStorage={(queue, index) => {
+            console.log('updatePlaylistLocalStorage');
+            setPlaylist({...playlist, queue, index});
+          }}
+        />
       )}
     </div>
   )
 }
 
-function ImportPage({playlists, updatePlaylists}) {
+function ImportPage({updatePlaylist, resetPlaylist}) {
   const navigate = useNavigate();
   const [playlistUrl, setPlaylistUrl] = useState()
   useEffect(() => {
@@ -1118,9 +1157,7 @@ function ImportPage({playlists, updatePlaylists}) {
           <div className='flex-1'>
             <button className="relative flex w-full justify-center rounded-md bg-red-700 py-2 px-3 text-sm font-medium text-red-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 active:opacity-50 active:scale-95 duration-100 ease-in-out"
               onClick={async () => {
-                let playlistId = getPlaylistId(playlistUrl);
-                fetch(BASE+'update?playlist_id='+playlistId, {method: 'POST'});
-                await updatePlaylistInfo(playlists, updatePlaylists, playlistId);
+                await updatePlaylist(playlistUrl);
                 navigate('/');
               }}
             >
@@ -1138,9 +1175,7 @@ function ImportPage({playlists, updatePlaylists}) {
           <div className='flex-1'>
             <button className="relative flex w-full justify-center rounded-md bg-zinc-800 py-2 px-3 text-sm font-medium text-zinc-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 active:opacity-50 active:scale-95 duration-100 ease-in-out"
               onClick={async () => {
-                let playlistId = getPlaylistId(playlistUrl);
-                fetch(BASE+'import?playlist_id='+playlistId, {method: 'POST'});
-                await updatePlaylistInfo(playlists, updatePlaylists, playlistId);
+                await resetPlaylist(playlistUrl);
                 navigate('/');
               }}
             >
@@ -1162,71 +1197,97 @@ function ImportPage({playlists, updatePlaylists}) {
 }
 
 function App() {
-  const [count, setCount] = useState(0)
   const [playlists, setPlaylists] = useState(JSON.parse(localStorage.playlists || '{}'))
-  const [playerCount, setPlayerCount] = useState(0);
 
   useEffect(() => {
     (async () => {
       for (const playlistId in playlists) {
-        await updatePlaylistInfo(playlists, updatePlaylists, playlistId);
+        await updatePlaylistInfo(playlistId);
       }
     })();
   }, [])
 
-  function changePlayerCount() {
-    setPlayerCount(playerCount+1);
-  }
+  async function syncPlaylist(playlistId) {
+    const playlist = {...playlists[playlistId]};
+    playlist.queue = playlist.queue ?? [];
+    let indexVideoId = playlist.queue[playlist.index ?? 0] ?? '';
+    let resp = await fetch(BASE+'get_video_ids?playlist_id='+playlistId);
+    let {videoIds, removedVideoIds} = await resp.json();
+    if (videoIds == null) return;
+    removedVideoIds = removedVideoIds ?? {};
 
-  function savePlaylists(newPlaylists) {
-    const updatedPlaylists = {...playlists, ...newPlaylists};
-    setPlaylists(updatedPlaylists);
-    localStorage.playlists = JSON.stringify(updatedPlaylists);
-  }
-
-  function updatePlaylists(newPlaylists) {
-    savePlaylists(newPlaylists);
-    setCount(count+1);
+    let newVideoIds = {...videoIds};
+    for (const videoId of playlist.queue) {
+      delete newVideoIds[videoId];
+    }
+    playlist.queue = Object.keys(newVideoIds).concat(playlist.queue);
+    // Filter by `not in removedVideoIds` instead of `in videoIds` as a safety in case videoId was removed from videoIds but not added to removedVideoIds.
+    playlist.queue = playlist.queue.filter((videoId) => !removedVideoIds?.[videoId]);
+    playlist.index = Math.max(0, playlist.queue.indexOf(indexVideoId));
+    playlist.videoIds = videoIds;
+    playlist.removedVideoIds = removedVideoIds;
+    setPlaylists((playlists) => ({...playlists, [playlistId]: playlist}));
   }
 
   async function syncPlaylists() {
     console.log('syncing...')
-    for (const playlistId in playlists) {
-      const playlist = playlists[playlistId];
-      playlist.queue = playlist.queue ?? [];
-      let indexVideoId = playlist.queue[playlist.index ?? 0] ?? '';
-      let resp = await fetch(BASE+'get_video_ids?playlist_id='+playlistId);
-      // console.log(await resp.json());
-      // continue;
-      let {videoIds, removedVideoIds} = await resp.json();
-      if (videoIds == null) continue;
-      removedVideoIds = removedVideoIds ?? {};
-      console.log(playlist.title)
-      console.log(Object.keys(videoIds).length, Object.keys(removedVideoIds).length);
-
-      let newVideoIds = {...videoIds};
-      for (const videoId of playlist.queue) {
-        delete newVideoIds[videoId];
-      }
-      playlist.queue = Object.keys(newVideoIds).concat(playlist.queue);
-      // Filter by `not in removedVideoIds` instead of `in videoIds` as a safety in case videoId was removed from videoIds but not added to removedVideoIds.
-      playlist.queue = playlist.queue.filter((videoId) => !removedVideoIds?.[videoId]);
-      playlist.index = Math.max(0, playlist.queue.indexOf(indexVideoId));
-      playlist.videoIds = videoIds;
-      playlist.removedVideoIds = removedVideoIds;
+    for (let playlistId in playlists) {
+      await syncPlaylist(playlistId);
     }
-    updatePlaylists();
+  }
+  
+  useEffect(() => {
+    console.log('playlists changed!!!')
+    localStorage.playlists = JSON.stringify(playlists);
+  }, [playlists])
+
+  async function updatePlaylistInfo(playlistId) {
+    let resp = await fetch(BASE+'get_playlist_info?playlist_id='+playlistId);
+    let playlist = await resp.json();
+    setPlaylists({...playlists, [playlistId]: {...playlists[playlistId] ?? {}, ...playlist}});
+  }
+
+  async function updatePlaylist(playlistUrl) {
+    let playlistId = getPlaylistId(playlistUrl);
+    await updatePlaylistInfo(playlistId);
+    await fetch(BASE+'update?playlist_id='+playlistId, {method: 'POST'});
+  }
+
+  async function resetPlaylist(playlistUrl) {
+    let playlistId = getPlaylistId(playlistUrl);
+    await updatePlaylistInfo(playlistId);
+    await fetch(BASE+'import?playlist_id='+playlistId, {method: 'POST'});
+  }
+
+  async function loadPlaylistVideos(playlistUrl, setProgress) {
+    console.log('LOAD PLAYLIST VIDEOS')
+    let playlistId = getPlaylistId(playlistUrl);
+    setProgress?.(20);
+    if (!playlists[playlistId]) {
+      await updatePlaylistInfo(playlistId);
+      setProgress?.(40);
+      await updatePlaylist(playlistUrl);
+      setProgress?.(60);
+      await syncPlaylist(playlistId);
+    }
+    setProgress?.(80);
+    let resp = await fetch(BASE+'get_playlist_videos?playlist_id='+playlistId);
+    const videos = await resp.json();
+    setProgress?.(100);
+    return {playlist: playlists[playlistId], videos};
   }
 
   return (
     <div className="flex flex-col min-h-full items-center justify-center bg-zinc-950 selection:bg-zinc-300/25 selection:text-zinc-50">
-      <Routes>
-        <Route path='/' element={<PlayerSwitcher key={'player'+playerCount} playlists={playlists} savePlaylists={savePlaylists} syncPlaylists={syncPlaylists} changePlayerCount={changePlayerCount}/>}></Route>
-        <Route path='/play' element={<PlaylistLoadingPage playlists={playlists} savePlaylists={savePlaylists} syncPlaylists={syncPlaylists} changePlayerCount={changePlayerCount}/>}></Route>
-        <Route path='/import' element={<ImportPage playlists={playlists} updatePlaylists={updatePlaylists}/>}></Route>
-        <Route path='/s' element={<SessionPage changePlayerCount={changePlayerCount}/>}></Route>
-        <Route path='/s/:session' element={<SessionPage changePlayerCount={changePlayerCount}/>}></Route>
-      </Routes>
+      <div className='w-full flex-1 flex flex-col min-h-full items-center justify-center'>
+        <Routes>
+          <Route path='/' element={<SelectPlaylistPage playlists={playlists} syncPlaylists={syncPlaylists}/>}></Route>
+          <Route path='/play' element={<PlaylistLoadingPage setPlaylists={setPlaylists} updatePlaylist={updatePlaylist} resetPlaylist={resetPlaylist} loadPlaylistVideos={loadPlaylistVideos}/>}></Route>
+          <Route path='/import' element={<ImportPage updatePlaylist={updatePlaylist} resetPlaylist={resetPlaylist}/>}></Route>
+          <Route path='/s' element={<SessionPage/>}></Route>
+          <Route path='/s/:session' element={<SessionPage/>}></Route>
+        </Routes>
+      </div>
       <div className='flex flex-col items-center pb-4'>
         <a href='https://github.com/jwseph/youtube-player' className='p-2 active:opacity-50 active:scale-95 duration-100 ease-in-out text-zinc-500'>
           <RiGithubLine className='w-5 h-5'/>
