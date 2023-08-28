@@ -733,7 +733,7 @@ function PlayerPage({playlist, updatePlaylist, resetPlaylist, updatePlaylistLoca
             </div>
           </div>
           <div className='flex flex-col items-center'>
-            <div className='max-w-3xl w-full py-8'>
+            <div className='max-w-3xl w-full pb-8'>
               <PlaylistQueue queue={queue} videos={videos} index={index} onClick={(i) => setIndex(i)}/>
             </div>
           </div>
@@ -1012,7 +1012,7 @@ function SessionPage({}) {
             </div>
           </div>
           <div className='flex flex-col items-center'>
-            <div className='max-w-3xl w-full py-8'>
+            <div className='max-w-3xl w-full pb-8'>
               <PlaylistQueue queue={playback.queue} videos={videos} index={playback.index}
                 onClick={(i) => {
                   socket.emit('select_video', {
