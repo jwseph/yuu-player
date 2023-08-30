@@ -69,7 +69,7 @@ function SelectPlaylistPage({playlists, syncPlaylists}) {
   }, [])
 
   return (
-    <div className="w-full max-w-3xl py-12 px-6 sm:px-6 lg:px-6 space-y-6 mb-8">
+    <div className="w-full max-w-3xl py-12 px-7 sm:px-7 lg:px-7 space-y-6 mb-8">
       <div className='flex justify-between items-center text-zinc-200'>
         <Link to={`/s/${generateSessionId()}`} className='w-10 h-10 -mr-3 flex justify-center items-center active:opacity-50 active:scale-95 duration-100 ease-in-out'>
           <RiGroupLine className='w-5 h-5'/>
@@ -88,19 +88,19 @@ function SelectPlaylistPage({playlists, syncPlaylists}) {
           Import a playlist to get started (+)
         </div>
       ) : (
-        <div className='flex flex-col gap-6'>
+        <div className='flex flex-col gap-7'>
           {Object.keys(playlists).map(playlistId => {
             let playlist = playlists[playlistId];
             return (
-              <Link key={playlistId} to={'/play?list='+playlistId} className={'items-center w-full bg-zinc-900 px-6 py-6 flex gap-5 rounded-md shadow-sm opacity-50' + (!playlist?.queue ? ' cursor-default' : ' cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 !opacity-100 active:opacity-50 active:scale-95 duration-100')} tabIndex={!playlist?.queue ? '-1' : '0'}>
+              <Link key={playlistId} to={'/play?list='+playlistId} className={'items-center w-full bg-zinc-900 px-7 py-7 flex gap-7 rounded-lg shadow-sm opacity-50' + (!playlist?.queue ? ' cursor-default' : ' cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 !opacity-100 active:opacity-50 active:scale-95 duration-100')} tabIndex={!playlist?.queue ? '-1' : '0'}>
                 <div className="aspect-square h-28 relative bg-gradient-to-tr	from-zinc-900 to-zinc-950 rounded-sm shadow-sm overflow-hidden">
                   <div className="absolute inset-0 bg-cover bg-center z-0 duration-200 ease-in-out" style={{backgroundImage: 'url('+playlist.thumbnails.small+')'}}></div>
                 </div>
                 <div className='flex flex-col flex-1 items-start'>
-                  <h3 className='text-lg text-zinc-200 font-semibold tracking-tight text-left leading-tight'>{playlist.title}</h3>
+                  <h3 className='text-lg text-zinc-300 font-semibold tracking-tight text-left leading-tight'>{playlist.title}</h3>
                   <div className='flex flex-wrap pt-1'>
-                    <div className='text-sm text-zinc-400 font-medium tracking-tight'>{playlist.channel}</div>
-                    <div className='px-2 text-sm text-zinc-500'>·</div>
+                    <div className='text-sm text-zinc-300 font-medium tracking-tight'>{playlist.channel}</div>
+                    <div className='px-2'></div>
                     {!playlist.queue ? (
                       <div className='text-sm text-zinc-500'>Importing videos...</div>
                     ) : (
@@ -141,13 +141,13 @@ function PlaylistQueue({queue, videos, index, onClick, onRemove}) {
         return (
           <button key={videoId}
             className={classNames(
-              'group active:opacity-50 active:scale-95 duration-100 ease-in-out mb-px last:mb-0 px-6 sm:px-6 lg:px-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 focus-visible:z-20 rounded-none sm:rounded-md lg:rounded-md',
+              'group active:opacity-50 active:scale-95 duration-100 ease-in-out mb-px last:mb-0 px-7 sm:px-7 lg:px-7 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 focus-visible:z-20 rounded-none sm:rounded-md lg:rounded-md',
               index == i ? 'bg-zinc-900' : 'bg-zinc-950',
             )}
             onClick={() => onClick(i)}
           >
             <div className='flex flex-1 items-center space-x-3'>
-              <div className='-ml-6 w-10 text-xs text-zinc-500 text-right'>{i+1}</div>
+              <div className='-ml-7 w-10 text-xs text-zinc-500 text-right'>{i+1}</div>
               <div className='py-4'>
                 <div className='relative'>
                   <div className={classNames(
@@ -206,7 +206,7 @@ function PauseButton({addPlayingListener, onClick, color, video, changePlaying})
         setPlaying(!playing);
         await onClick();
       }}
-      style={{'--darkIconColor': blendColors('#09090b', color, 0.1)}}
+      style={{'--darkIconColor': blendColors('#09090b', color, 0.07)}}
       disabled={!video}
     >
       {!playing ? <RiPlayFill className='w-9 h-9 duration-1000 ease-in-out'/> : <RiPauseFill className='w-9 h-9 duration-1000 ease-in-out'/>}
@@ -289,7 +289,7 @@ function PlayerBar({playerRef, video, onDragStop}) {
 
     dragging.current = false;
     updateTimeDelay.current = 5;
-    
+
     console.log('STOP DRAGGING', newTime, onDragStop);
 
     onDragStop?.(newTime);
@@ -426,15 +426,15 @@ function PlayerController({video, playingCallback, playingRef, playerRef, loopOn
             <RiShuffleFill className='w-5 h-5'/>
           </button>
           <div className='flex-1'></div>
-          <button className='group flex flex-row-reverse items-center justify-center p-3 select-none text-zinc-50 active:scale-95 disabled:scale-100 duration-100 ease-in-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
+          <button className='relative flex items-center justify-center px-3 p-1.5 select-none text-zinc-50 active:scale-95 disabled:scale-100 duration-100 ease-in-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm active:opacity-50 disabled:opacity-50 drop-shadow-sm'
             onClick={playPrev}
             disabled={!video}
           >
-            {video && getPrev() && <img className='w-16 scale-150 aspect-video opacity-30 group-active:opacity-100 duration-100 ease-in-out rounded-sm' src={getPrev().thumbnails.small}/>}
-            <RiSkipBackFill className='absolute w-9 h-9 z-30 group-active:opacity-0 group-disabled:opacity-50 drop-shadow-sm duration-100 ease-in-out'/>
+            {video && getPrev() && <img className='absolute w-16 scale-125 aspect-video opacity-30 ease-in-out rounded-sm' src={getPrev().thumbnails.small}/>}
+            <RiSkipBackFill className='w-9 h-9 z-30 drop-shadow-sm'/>
           </button>
           <div className='flex-1 max-w-[3rem]'></div>
-          <div>
+          <div className='z-30'>
             <PauseButton addPlayingListener={(callback) => playingCallback.current = callback}
               onClick={togglePlaying}
               color={color}
@@ -443,12 +443,12 @@ function PlayerController({video, playingCallback, playingRef, playerRef, loopOn
             />
           </div>
           <div className='flex-1 max-w-[3rem]'></div>
-          <button className='group flex items-center justify-center p-3 select-none text-zinc-50 active:scale-95 disabled:scale-100 duration-100 ease-in-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
+          <button className='relative flex items-center justify-center px-3 p-1.5 select-none text-zinc-50 active:scale-95 disabled:scale-100 duration-100 ease-in-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm active:opacity-50 disabled:opacity-50 drop-shadow-sm'
             onClick={playNext}
             disabled={!video}
           >
-            {video && getNext() && <img className='w-16 scale-150 aspect-video opacity-30 group-active:opacity-100 duration-100 ease-in-out rounded-sm' src={getNext().thumbnails.small}/>}
-            <RiSkipForwardFill className='absolute w-9 h-9 z-30 group-active:opacity-0 group-disabled:opacity-50 drop-shadow-sm duration-100 ease-in-out'/>
+            {video && getNext() && <img className='absolute w-16 scale-125 aspect-video opacity-30 ease-in-out rounded-sm' src={getNext().thumbnails.small}/>}
+            <RiSkipForwardFill className='w-9 h-9 z-30 drop-shadow-sm'/>
           </button>
           <div className='flex-1'></div>
           <LoopOneButton loopOne={loopOne} setLoopOne={setLoopOne} video={video} onLoopOneClick={onLoopOneClick}/>
@@ -549,7 +549,7 @@ function PlayerPage({playlist, updatePlaylist, resetPlaylist, updatePlaylistLoca
   useEffect(() => {
     autoNext.current = loopOne ? playCurr : playNext;
   }, [index, loopOne])
-  const youtubePlayer = useMemo(() => 
+  const youtubePlayer = useMemo(() =>
   <YouTube videoId={queue[index]}
     opts={{
       host: 'https://www.youtube-nocookie.com',
@@ -605,7 +605,7 @@ function PlayerPage({playlist, updatePlaylist, resetPlaylist, updatePlaylistLoca
                 leaveFrom="opacity-100 translate-y-0 scale-100"
                 leaveTo="opacity-0 translate-y-4 lg:translate-y-0 lg:scale-110"
               >
-                <Dialog.Panel className="relative transform text-left transition-all py-16 px-6 lg:px-6 w-full h-screen max-w-3xl max-h-[100dvh] flex flex-col pointer-events-none">
+                <Dialog.Panel className="relative transform text-left transition-all py-16 px-7 lg:px-7 w-full h-screen max-w-3xl max-h-[100dvh] flex flex-col pointer-events-none">
                   <div className='flex-1'></div>
                   <div className='flex flex-col items-center space-y-7'>
                     <div className='px-8 flex flex-col items-center'>
@@ -621,28 +621,28 @@ function PlayerPage({playlist, updatePlaylist, resetPlaylist, updatePlaylistLoca
                   <div className='overflow-y-scroll -mx-6 flex flex-col items-start text-md pointer-events-auto' onClick={() => setMenu(false)}>
                     {/* <MenuLink setMenuOpen={setMenuOpen} href='#' text='Top'/> */}
                     {/* <MenuLink setMenuOpen={setMenuOpen} href='#members' text='Members'/> */}
-                    <a target='_blank' className='w-full px-6 flex gap-4 items-center active:opacity-50 active:scale-95 duration-100 ease-in-out' href={`https://www.youtube.com/watch?v=${getVideoId(video?.video_url)}&list=${playlistId}`}>
+                    <a target='_blank' className='w-full px-7 flex gap-4 items-center active:opacity-50 active:scale-95 duration-100 ease-in-out' href={`https://www.youtube.com/watch?v=${getVideoId(video?.video_url)}&list=${playlistId}`}>
                       <RiExternalLinkLine className='text-zinc-400 w-5 h-5'/>
                       <div className='text-zinc-200 flex-1 py-4 text-left'>
                         Open in YouTube
                       </div>
                     </a>
                     {showRemoved ? (
-                      <button onClick={() => setShowRemoved(false)} className='w-full px-6 flex gap-4 items-center active:opacity-50 active:scale-95 duration-100 ease-in-out'>
+                      <button onClick={() => setShowRemoved(false)} className='w-full px-7 flex gap-4 items-center active:opacity-50 active:scale-95 duration-100 ease-in-out'>
                         <RiEyeOffLine className='text-zinc-400 w-5 h-5'/>
                         <div className='text-zinc-200 flex-1 py-4 text-left'>
                           Hide removed videos
                         </div>
                       </button>
                     ) : (
-                      <button onClick={() => setShowRemoved(true)} className='w-full px-6 flex gap-4 items-center active:opacity-50 active:scale-95 duration-100 ease-in-out'>
+                      <button onClick={() => setShowRemoved(true)} className='w-full px-7 flex gap-4 items-center active:opacity-50 active:scale-95 duration-100 ease-in-out'>
                         <RiEyeLine className='text-zinc-400 w-5 h-5'/>
                         <div className='text-zinc-200 flex-1 py-4 text-left'>
                           View removed videos
                         </div>
                       </button>
                     )}
-                    <button className='w-full px-6 flex gap-4 items-center active:opacity-50 active:scale-95 duration-100 ease-in-out'
+                    <button className='w-full px-7 flex gap-4 items-center active:opacity-50 active:scale-95 duration-100 ease-in-out'
                       onClick={async () => {
                         await updatePlaylist(location.href);
                         location.reload();
@@ -653,7 +653,7 @@ function PlayerPage({playlist, updatePlaylist, resetPlaylist, updatePlaylistLoca
                         Update playlist
                       </div>
                     </button>
-                    <button className='w-full px-6 flex gap-4 items-center active:opacity-50 active:scale-95 duration-100 ease-in-out'
+                    <button className='w-full px-7 flex gap-4 items-center active:opacity-50 active:scale-95 duration-100 ease-in-out'
                       onClick={async () => {
                         await resetPlaylist(location.href);
                         location.reload();
@@ -683,8 +683,8 @@ function PlayerPage({playlist, updatePlaylist, resetPlaylist, updatePlaylistLoca
           <div className='relative text-center duration-1000 ease-in-out shadow-sm z-10'>
             <img className='absolute w-full h-[90%] bg-zinc-900' src={video?.thumbnails?.small ?? '/zero.png'}/>
             <div className='text-left z-10 min-h-[100svh] flex flex-col items-center backdrop-blur-3xl bg-gradient-to-b from-zinc-950/20 via-zinc-950/60 to-zinc-950'>
-              <div className='max-w-3xl w-full inline-flex flex-1 flex-col justify-between gap-12 pt-16 pb-20 z-20'>
-                <div className='flex justify-between items-center px-6 sm:px-6 lg:px-6'>
+              <div className='max-w-3xl w-full inline-flex flex-1 flex-col py-12 z-20'>
+                <div className='flex justify-between items-center px-7 sm:px-7 lg:px-7'>
                   <Link to='/' className='w-10 h-10 -ml-3 flex justify-center items-center active:opacity-50 active:scale-95 duration-100 ease-in-out'>
                     <RiArrowLeftSLine className='w-7 h-7'/>
                   </Link>
@@ -700,7 +700,8 @@ function PlayerPage({playlist, updatePlaylist, resetPlaylist, updatePlaylistLoca
                     <RiMore2Fill className='w-5 h-5'/>
                   </button>
                 </div>
-                <div className='px-6 sm:px-16 md:px-24'>
+                <div className='flex-6 min-h-12'></div>
+                <div className='px-7 sm:px-16 md:px-24'>
                   <div id='videoContainer' className='w-full aspect-video rounded-md shadow-2xl overflow-hidden group'>
                     {!video && <div className='w-full h-full bg-zinc-800'>
                       <div className='w-full h-full p-[20%] flex flex-col justify-center items-center text-zinc-700'>
@@ -712,7 +713,8 @@ function PlayerPage({playlist, updatePlaylist, resetPlaylist, updatePlaylistLoca
                     {youtubePlayer}
                   </div>
                 </div>
-                <div className='px-6 sm:px-6 lg:px-6'>
+                <div className='flex-6 min-h-12'></div>
+                <div className='px-7 sm:px-7 lg:px-7'>
                   <PlayerController
                     video={video}
                     playingCallback={playingCallback}
@@ -728,7 +730,7 @@ function PlayerPage({playlist, updatePlaylist, resetPlaylist, updatePlaylistLoca
                     color={color}
                   />
                 </div>
-
+                <div className='flex-1'></div>
               </div>
             </div>
           </div>
@@ -743,7 +745,7 @@ function PlayerPage({playlist, updatePlaylist, resetPlaylist, updatePlaylistLoca
   )
 }
 
-function SessionPage({}) {
+function SessionPage() {
   const { session } = useParams();
   const [videos, setVideos] = useState({});
   const [playback, setPlayback] = useState({queue: [], index: 0});
@@ -807,7 +809,7 @@ function SessionPage({}) {
   useEffect(() => {
     autoNext.current = loopOne ? playCurr : playNext;
   }, [videoId, loopOne])
-  const youtubePlayer = useMemo(() => 
+  const youtubePlayer = useMemo(() =>
   <YouTube
     opts={{
       host: 'https://www.youtube-nocookie.com',
@@ -945,8 +947,8 @@ function SessionPage({}) {
           <div className='relative text-center duration-1000 ease-in-out shadow-sm z-10'>
             <img className='absolute w-full h-[90%] bg-zinc-900' src={video?.thumbnails?.small ?? '/zero.png'}/>
             <div className='text-left z-10 min-h-[100svh] flex flex-col items-center backdrop-blur-3xl bg-gradient-to-b from-zinc-950/20 via-zinc-950/60 to-zinc-950'>
-              <div className='max-w-3xl w-full inline-flex flex-1 flex-col justify-between gap-12 pt-16 pb-20 z-20'>
-                <div className='flex justify-between items-center px-6 sm:px-6 lg:px-6'>
+              <div className='max-w-3xl w-full inline-flex flex-1 flex-col py-12 z-20'>
+                <div className='flex justify-between items-center px-7 sm:px-7 lg:px-7'>
                   <Link to='/' className='w-10 h-10 -ml-3 flex justify-center items-center active:opacity-50 active:scale-95 duration-100 ease-in-out'>
                     <RiArrowLeftSLine className='w-7 h-7'/>
                   </Link>
@@ -964,7 +966,8 @@ function SessionPage({}) {
                     <RiPlayListAddLine className='w-5 h-5'/>
                   </button>
                 </div>
-                <div className='px-6 sm:px-16 md:px-24'>
+                <div className='flex-6 min-h-12'></div>
+                <div className='px-7 sm:px-16 md:px-24'>
                   <div id='videoContainer' className='w-full aspect-video rounded-md shadow-2xl overflow-hidden group'>
                     {!video && <div className='w-full h-full bg-zinc-800'>
                       <div className='w-full h-full p-[20%] flex justify-center items-center'>
@@ -974,7 +977,8 @@ function SessionPage({}) {
                     {youtubePlayer}
                   </div>
                 </div>
-                <div className='px-6 sm:px-6 lg:px-6'>
+                <div className='flex-6 min-h-12'></div>
+                <div className='px-7 sm:px-7 lg:px-7'>
                   <PlayerController
                     video={video}
                     playingCallback={playingCallback}
@@ -1007,7 +1011,7 @@ function SessionPage({}) {
                     }}
                   />
                 </div>
-
+                <div className='flex-1'></div>
               </div>
             </div>
           </div>
@@ -1067,7 +1071,7 @@ function PlaylistLoadingPage({setPlaylists, updatePlaylist, resetPlaylist, loadP
   const [progress, setProgress] = useState(0);
   const [image, setImage] = useState('');
   const requestedImage = useRef(false);
-  
+
   useEffect(() => {
     if (requestedImage.current) return;
     requestedImage.current = true;
@@ -1132,7 +1136,7 @@ function ImportPage({updatePlaylist, resetPlaylist}) {
     document.title = 'Import a playlist · Yuu';
   }, [])
   return (
-    <div className="w-full max-w-3xl py-12 px-6 sm:px-6 lg:px-6 space-y-8 mb-8">
+    <div className="w-full max-w-3xl py-12 px-7 sm:px-7 lg:px-7 space-y-8 mb-8">
       <div className='flex justify-between items-center'>
         <Link to='/' className='p-3 -ml-3 active:opacity-50 active:scale-95 duration-100 ease-in-out'>
           <RiArrowLeftSLine className='w-7 h-7'/>
@@ -1153,7 +1157,7 @@ function ImportPage({updatePlaylist, resetPlaylist}) {
             <input onChange={e => setPlaylistUrl(e.target.value.trim())} id="playlistUrl" name="playlistUrl" type="text" autoComplete="off" className="relative block w-full rounded-md border-0 py-1.5 bg-zinc-900 text-zinc-200 ring-1 ring-inset ring-zinc-700 placeholder:text-zinc-500 focus:z-20 focus:ring-2 focus:ring-inset focus:ring-red-600 text-sm shadow-sm leading-6 px-3" placeholder='Enter a YouTube playlist URL'/>
           </div>
         </div>
-        <div className='flex gap-6'>
+        <div className='flex gap-7'>
           <div className='flex-1'>
             <button className="relative flex w-full justify-center rounded-md bg-red-700 py-2 px-3 text-sm font-medium text-red-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 active:opacity-50 active:scale-95 duration-100 ease-in-out"
               onClick={async () => {
@@ -1235,7 +1239,7 @@ function App() {
       await syncPlaylist(playlistId);
     }
   }
-  
+
   useEffect(() => {
     console.log('playlists changed!!!')
     localStorage.playlists = JSON.stringify(playlists);
@@ -1274,6 +1278,7 @@ function App() {
     let resp = await fetch(BASE+'get_playlist_videos?playlist_id='+playlistId);
     const videos = await resp.json();
     setProgress?.(100);
+    console.log('DONE LOADING PLAYLIST VIDEOS')
     return {playlist: playlists[playlistId], videos};
   }
 
@@ -1308,15 +1313,6 @@ function App() {
           theme="dark"
         />
       </div>
-      {/* <footer className='fixed bottom-0 px-6 py-5 text-sm text-zinc-500 backdrop-blur-lg bg-zinc-950/80 flex z-50 border-1 border-zinc-950 border-b-0 w-full justify-center'>
-        <div className='pr-3 border-r border-zinc-800 font-semibold focus-visible:text-zinc-300'>
-          <Link to='/' className={'inline-flex h-full rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600' + (tab == 0 ? ' text-zinc-400' : '')} onClick={changePlayerCount}>Player</Link>
-        </div>
-        <div className='px-3 border-r border-zinc-800 font-semibold'>
-          <Link to='/import' className={'inline-flex h-full rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600' + (tab == 1 ? ' text-zinc-400' : '')}>Import</Link>
-        </div>
-        <a href="https://github.com/jwseph/youtube-player" target='_blank' className='rounded-sm font-semibold ml-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600'>Github</a>
-      </footer> */}
     </div>
   )
 }
