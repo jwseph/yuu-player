@@ -5,6 +5,8 @@ import { LazyLoadImage } from 'react-lazy-load-image-component'
 import YouTube from 'react-youtube'
 // import { MdSkipNext, MdSkipPrevious, MdShuffle, MdPlayArrow, MdPause, MdRepeatOne, MdRepeatOneOn, MdKeyboardArrowDown, MdKeyboardArrowUp } from 'react-icons/md';
 import { RiPlayFill, RiPauseFill, RiSkipBackFill, RiSkipForwardFill, RiShuffleFill, RiRepeat2Fill, RiRepeatOneFill, RiArrowDownSFill, RiArrowUpSFill, RiArrowDownSLine, RiArrowLeftSLine, RiMoreLine, RiAddLine, RiGithubLine, RiExternalLinkLine, RiGroupLine, RiPlayListAddLine, RiCloseFill, RiMore2Fill, RiEyeLine, RiEyeOffLine, RiRefreshLine, RiDownloadLine } from "react-icons/ri";
+import { GoBroadcast, GoPlus, GoChevronLeft, GoBug } from 'react-icons/go'
+import { BugIcon, ChevronDownIcon, ChevronLeftIcon, CodespacesIcon, DownloadIcon, EyeClosedIcon, EyeIcon, FileAddedIcon, KebabHorizontalIcon, LinkExternalIcon, MarkGithubIcon, PasteIcon, PlusCircleIcon, PlusIcon, RedoIcon, ShareAndroidIcon, ShareIcon, SyncIcon } from '@primer/octicons-react'
 import LoadingBar from 'react-top-loading-bar'
 import { socket } from './socket'
 import { ToastContainer, toast } from 'react-toastify'
@@ -69,53 +71,70 @@ function SelectPlaylistPage({playlists, syncPlaylists}) {
   }, [])
 
   return (
-    <div className="w-full max-w-3xl py-12 px-7 sm:px-7 lg:px-7 space-y-6 mb-8">
-      <div className='flex justify-between items-center text-zinc-200'>
-        <Link to={`/s/${generateSessionId()}`} className='w-10 h-10 -mr-3 flex justify-center items-center active:opacity-50 active:scale-95 duration-100 ease-in-out'>
-          <RiGroupLine className='w-5 h-5'/>
-        </Link>
+    <div className='w-full grow max-w-3xl py-5 sm:py-8 px-5 sm:px-7 flex flex-col items-center gap-8 mb-8'>
+      <div className='w-full flex justify-between items-center text-zinc-200'>
+        <div className='flex flex-1 items-center'>
+          <Link to={`/s/${generateSessionId()}`} className='flex items-center gap-1 text-red-500 tracking-tight active:opacity-30 duration-100 ease-in-out'>
+            <div className='h-8'/>
+            <ShareAndroidIcon className='w-6 h-6' size='large'/>
+            <div className='hidden sm:block'>Group session</div>
+          </Link>
+        </div>
         <div>
-          <h2 className="text-center text-2xl font-semibold tracking-tighter">
-          Select a playlist
+          <h2 className='text-center font-semibold tracking-tight text-zinc-50'>
+            Select a playlist
           </h2>
         </div>
-        <Link to='/import' className='p-3 -mr-3 active:opacity-50 active:scale-95 duration-100 ease-in-out'>
-          <RiAddLine className='w-7 h-7'/>
-        </Link>
+        <div className='flex flex-1 items-center justify-end'>
+          <Link to='/import' className='flex items-center gap-1 text-red-500 tracking-tight active:opacity-30 duration-100 ease-in-out'>
+            <div className='h-8'/>
+            <div className='hidden sm:block'>Import a playlist</div>
+            <PlusCircleIcon className='w-6 h-6' size='large'/>
+          </Link>
+        </div>
       </div>
-      {!Object.keys(playlists).length ? (
-        <div className='text-center text-sm text-zinc-400 flex flex-wrap justify-center gap-1'>
-          Import a playlist to get started (+)
-        </div>
-      ) : (
-        <div className='flex flex-col gap-7'>
-          {Object.keys(playlists).map(playlistId => {
-            let playlist = playlists[playlistId];
-            return (
-              <Link key={playlistId} to={'/play?list='+playlistId} className={'items-center w-full bg-zinc-900 px-7 py-7 flex gap-7 rounded-lg shadow-sm opacity-50' + (!playlist?.queue ? ' cursor-default' : ' cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 !opacity-100 active:opacity-50 active:scale-95 duration-100')} tabIndex={!playlist?.queue ? '-1' : '0'}>
-                <div className="aspect-square h-28 relative bg-gradient-to-tr	from-zinc-900 to-zinc-950 rounded-sm shadow-sm overflow-hidden">
-                  <div className="absolute inset-0 bg-cover bg-center z-0 duration-200 ease-in-out" style={{backgroundImage: 'url('+playlist.thumbnails.small+')'}}></div>
-                </div>
-                <div className='flex flex-col flex-1 items-start'>
-                  <h3 className='text-lg text-zinc-300 font-semibold tracking-tight text-left leading-tight'>{playlist.title}</h3>
-                  <div className='flex flex-wrap pt-1'>
-                    <div className='text-sm text-zinc-300 font-medium tracking-tight'>{playlist.channel}</div>
-                    <div className='px-2'></div>
-                    {!playlist.queue ? (
-                      <div className='text-sm text-zinc-500'>Importing videos...</div>
-                    ) : (
-                      <div className='text-sm text-zinc-500'>{playlist.queue.length} videos</div>
+      <div className='w-full grow flex flex-col justify-center'>
+        {!Object.keys(playlists).length ? (
+          <div className='text-center text-sm text-zinc-400 flex flex-wrap justify-center gap-1'>
+            No playlists yet. Add a playlist to get started
+          </div>
+        ) : (
+          <div className='flex flex-col gap-5 sm:gap-7'>
+            {Object.keys(playlists).map(playlistId => {
+              let playlist = playlists[playlistId];
+              return (
+                <div key={playlistId} className={classNames('group relative rounded-lg overflow-clip', !playlist?.queue ? 'cursor-default' : 'cursor-pointer', !playlist?.queue && 'opacity-30', 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600')}>
+                  <img src={playlist.thumbnails.small} className='absolute w-full h-full rounded-lg'/>
+                  <div className='absolute w-full h-full bg-zinc-900/70 backdrop-blur-3xl'/>
+                  <div className='absolute w-full h-full bg-zinc-950 opacity-0 group-active:opacity-70 z-20 duration-100 ease-in-out pointer-events-none'/>
+                  <Link to={'/play?list='+playlistId} tabIndex={!playlist?.queue ? '-1' : '0'}
+                    className={classNames(
+                      'relative items-center w-full px-5 sm:px-7 py-5 sm:py-7 flex gap-5 sm:gap-7 shadow-sm z-10',
                     )}
-                  </div>
-                  {playlist.description && (
-                    <div className='text-sm text-zinc-500 whitespace-pre-line text-left pt-2'>{playlist.description}</div>
-                  )}
+                  >
+                    {/* <div className="aspect-square h-16 sm:h-32 relative bg-gradient-to-tr	from-zinc-900 to-zinc-950 rounded-sm shadow-sm overflow-hidden">
+                      <div className="absolute inset-0 bg-cover bg-center z-0 duration-200 ease-in-out" style={{backgroundImage: 'url('+playlist.thumbnails.small+')'}}></div>
+                    </div> */}
+                    <img src={playlist.thumbnails.small} className='h-16 sm:h-32 aspect-square object-cover rounded-sm'/>
+                    <div className='flex flex-col flex-1 items-start gap-1'>
+                      <h3 className='text-md text-zinc-50 font-medium text-left truncate'>{playlist.title}</h3>
+                      <div className='flex flex-wrap'>
+                        <div className='text-sm text-zinc-50'>{playlist.channel}</div>
+                        <div className='px-2'></div>
+                        {/* {!playlist.queue ? (
+                          <div className='text-sm text-zinc-400'>Importing videos...</div>
+                        ) : (
+                          <div className='text-sm text-zinc-400'>{playlist.queue.length} videos</div>
+                        )} */}
+                      </div>
+                    </div>
+                  </Link>
                 </div>
-              </Link>
-            )
-          })}
-        </div>
-      )}
+              )
+            })}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
@@ -141,13 +160,13 @@ function PlaylistQueue({queue, videos, index, onClick, onRemove}) {
         return (
           <button key={videoId}
             className={classNames(
-              'group active:opacity-50 active:scale-95 duration-100 ease-in-out mb-px last:mb-0 px-7 sm:px-7 lg:px-7 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 focus-visible:z-20 rounded-none sm:rounded-md lg:rounded-md',
+              'group active:opacity-30 duration-100 ease-in-out mb-px last:mb-0 px-5 sm:px-7 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 focus-visible:z-20 rounded-none sm:rounded-md lg:rounded-md',
               index == i ? 'bg-zinc-900' : 'bg-zinc-950',
             )}
             onClick={() => onClick(i)}
           >
-            <div className='flex flex-1 items-center space-x-3'>
-              <div className='-ml-7 w-10 text-xs text-zinc-500 text-right'>{i+1}</div>
+            <div className='flex flex-1 items-center gap-3'>
+              <div className='hidden sm:block -ml-5 sm:-ml-7 w-10 text-xs text-zinc-500 text-right'>{i+1}</div>
               <div className='py-4'>
                 <div className='relative'>
                   <div className={classNames(
@@ -197,7 +216,7 @@ function PauseButton({addPlayingListener, onClick, color, video, changePlaying})
   }, [playing, setPlaying])
   return (
     <button
-      className='p-3 text-[var(--darkIconColor)] bg-zinc-50 active:opacity-50 active:scale-95 disabled:opacity-50 disabled:scale-100 duration-100 ease-in-out aspect-square rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600'
+      className='p-3 text-[var(--darkIconColor)] bg-zinc-50 active:opacity-30 disabled:opacity-50 disabled:scale-100 duration-100 ease-in-out aspect-square rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600'
       onClick={async () => {
         if (changePlaying) {
           changePlaying(playing);
@@ -216,7 +235,7 @@ function PauseButton({addPlayingListener, onClick, color, video, changePlaying})
 
 function LoopOneButton({loopOne, setLoopOne, video, onLoopOneClick}) {
   return (
-    <button className='p-3 -mr-3 text-zinc-50 active:opacity-50 active:scale-95 disabled:opacity-50 disabled:scale-100 duration-100 ease-in-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
+    <button className='p-3 -mr-3 text-zinc-50 active:opacity-30 disabled:opacity-50 disabled:scale-100 duration-100 ease-in-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
       onClick={() => {
         if (onLoopOneClick) {
           onLoopOneClick();
@@ -353,7 +372,7 @@ function PlayerBar({playerRef, video, onDragStop}) {
         >
           <div className='w-full h-full flex items-center'>
             <div className='h-1 bg-zinc-50 rounded-full' style={{width: time/duration*100+'%'}}></div>
-            <div className={'rounded-full bg-zinc-50 duration-75 ease-in-out'+(!dragging.current || endingDragging.current ? ' w-0 h-0 -ml-0' : ' w-4 h-4 -ml-2')}></div>
+            <div className={'rounded-full bg-zinc-50 duration-75 ease-in-out'+(!dragging.current || endingDragging.current ? ' w-3 h-3 -ml-1.5' : ' w-4 h-4 -ml-2')}></div>
           </div>
         </div>
       </div>
@@ -419,14 +438,14 @@ function PlayerController({video, playingCallback, playingRef, playerRef, loopOn
       <div className='flex flex-col'>
         <div className='flex'>
           {/* <DescriptionButton onClick={(newDescription) => setDescription(newDescription)}/> */}
-          <button className='p-3 -ml-3 text-zinc-50 active:opacity-50 active:scale-95 disabled:opacity-50 disabled:scale-100 duration-100 ease-in-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
+          <button className='p-3 -ml-3 text-zinc-50 active:opacity-30 disabled:opacity-50 disabled:scale-100 duration-100 ease-in-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm'
             onClick={shuffle}
             disabled={!video}
           >
             <RiShuffleFill className='w-5 h-5'/>
           </button>
           <div className='flex-1'></div>
-          <button className='relative flex items-center justify-center px-3 p-1.5 select-none text-zinc-50 active:scale-95 disabled:scale-100 duration-100 ease-in-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm active:opacity-50 disabled:opacity-50 drop-shadow-sm'
+          <button className='relative flex items-center justify-center px-3 p-1.5 select-none text-zinc-30 disabled:scale-100 duration-100 ease-in-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm active:opacity-50 disabled:opacity-50 drop-shadow-sm'
             onClick={playPrev}
             disabled={!video}
           >
@@ -443,7 +462,7 @@ function PlayerController({video, playingCallback, playingRef, playerRef, loopOn
             />
           </div>
           <div className='flex-1 max-w-[3rem]'></div>
-          <button className='relative flex items-center justify-center px-3 p-1.5 select-none text-zinc-50 active:scale-95 disabled:scale-100 duration-100 ease-in-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm active:opacity-50 disabled:opacity-50 drop-shadow-sm'
+          <button className='relative flex items-center justify-center px-3 p-1.5 select-none text-zinc-50 disabled:scale-100 duration-100 ease-in-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 rounded-sm active:opacity-30 disabled:opacity-50 drop-shadow-sm'
             onClick={playNext}
             disabled={!video}
           >
@@ -591,7 +610,7 @@ function PlayerPage({playlist, updatePlaylist, resetPlaylist, updatePlaylistLoca
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <div className='fixed inset-0 bg-zinc-900/40 backdrop-blur-2xl transition-opacity'/>
+            <div className='fixed inset-0 bg-zinc-950/20 backdrop-blur-3xl transition-opacity'/>
           </Transition.Child>
 
           <div className="fixed inset-0 z-20 overflow-y-auto">
@@ -605,73 +624,74 @@ function PlayerPage({playlist, updatePlaylist, resetPlaylist, updatePlaylistLoca
                 leaveFrom="opacity-100 translate-y-0 scale-100"
                 leaveTo="opacity-0 translate-y-4 lg:translate-y-0 lg:scale-110"
               >
-                <Dialog.Panel className="relative transform text-left transition-all py-16 px-7 lg:px-7 w-full h-screen max-w-3xl max-h-[100dvh] flex flex-col pointer-events-none">
-                  <div className='flex-1'></div>
+                <Dialog.Panel className="relative transform text-left transition-all py-8 px-5 sm:px-7 w-full h-screen max-w-3xl max-h-[100dvh] flex flex-col pointer-events-none">
+                  <div className='flex-4'></div>
                   <div className='flex flex-col items-center space-y-7'>
                     <div className='px-8 flex flex-col items-center'>
                       <img className='w-full h-full max-w-sm rounded-md' src={playlist.thumbnails.large}/>
                     </div>
-                    <div className='flex flex-col items-center gap-1'>
+                    <div className='max-w-full flex flex-col items-center gap-1'>
                       <h2 className='text-zinc-200 text-xl font-semibold tracking-tight truncate max-w-full'>
                         {playlist.title}
                       </h2>
                     </div>
                   </div>
-                  <div className='h-8'></div>
+                  <div className='flex-1'></div>
                   <div className='overflow-y-scroll -mx-6 flex flex-col items-start text-md pointer-events-auto' onClick={() => setMenu(false)}>
                     {/* <MenuLink setMenuOpen={setMenuOpen} href='#' text='Top'/> */}
                     {/* <MenuLink setMenuOpen={setMenuOpen} href='#members' text='Members'/> */}
-                    <a target='_blank' className='w-full px-7 flex gap-4 items-center active:opacity-50 active:scale-95 duration-100 ease-in-out' href={`https://www.youtube.com/watch?v=${getVideoId(video?.video_url)}&list=${playlistId}`}>
-                      <RiExternalLinkLine className='text-zinc-400 w-5 h-5'/>
-                      <div className='text-zinc-200 flex-1 py-4 text-left'>
+                    <a target='_blank' className='w-full py-3 sm:py-4 px-5 sm:px-7 flex gap-2 items-center active:opacity-30 duration-100 ease-in-out' href={`https://www.youtube.com/watch?v=${getVideoId(video?.video_url)}&list=${playlistId}`}>
+                      <LinkExternalIcon size='large' className='text-zinc-400 w-6 h-6'/>
+                      <div className='text-zinc-200 flex-1 text-left'>
                         Open in YouTube
                       </div>
                     </a>
                     {showRemoved ? (
-                      <button onClick={() => setShowRemoved(false)} className='w-full px-7 flex gap-4 items-center active:opacity-50 active:scale-95 duration-100 ease-in-out'>
-                        <RiEyeOffLine className='text-zinc-400 w-5 h-5'/>
-                        <div className='text-zinc-200 flex-1 py-4 text-left'>
+                      <button onClick={() => setShowRemoved(false)} className='w-full py-3 sm:py-4 px-5 sm:px-7 flex gap-2 items-center active:opacity-30 duration-100 ease-in-out'>
+                        <EyeClosedIcon size='large' className='text-zinc-400 w-6 h-6'/>
+                        <div className='text-zinc-200 flex-1 text-left'>
                           Hide removed videos
                         </div>
                       </button>
                     ) : (
-                      <button onClick={() => setShowRemoved(true)} className='w-full px-7 flex gap-4 items-center active:opacity-50 active:scale-95 duration-100 ease-in-out'>
-                        <RiEyeLine className='text-zinc-400 w-5 h-5'/>
-                        <div className='text-zinc-200 flex-1 py-4 text-left'>
+                      <button onClick={() => setShowRemoved(true)} className='w-full py-3 sm:py-4 px-5 sm:px-7 flex gap-2 items-center active:opacity-30 duration-100 ease-in-out'>
+                        <EyeIcon size='large' className='text-zinc-400 w-6 h-6'/>
+                        <div className='text-zinc-200 flex-1 text-left'>
                           View removed videos
                         </div>
                       </button>
                     )}
-                    <button className='w-full px-7 flex gap-4 items-center active:opacity-50 active:scale-95 duration-100 ease-in-out'
+                    <button className='w-full py-3 sm:py-4 px-5 sm:px-7 flex gap-2 items-center active:opacity-30 duration-100 ease-in-out'
                       onClick={async () => {
                         await updatePlaylist(location.href);
                         location.reload();
                       }}
                     >
-                      <RiDownloadLine className='text-zinc-400 w-5 h-5'/>
-                      <div className='text-zinc-200 flex-1 py-4 text-left'>
+                      <DownloadIcon size='large' className='text-zinc-400 w-6 h-6'/>
+                      <div className='text-zinc-200 flex-1 text-left'>
                         Update playlist
                       </div>
                     </button>
-                    <button className='w-full px-7 flex gap-4 items-center active:opacity-50 active:scale-95 duration-100 ease-in-out'
+                    <button className='w-full py-3 sm:py-4 px-5 sm:px-7 flex gap-2 items-center active:opacity-30 duration-100 ease-in-out'
                       onClick={async () => {
                         await resetPlaylist(location.href);
                         location.reload();
                       }}
                     >
-                      <RiRefreshLine className='text-zinc-400 w-5 h-5'/>
-                      <div className='text-zinc-200 flex-1 py-4 text-left'>
+                      <SyncIcon size='large' className='text-zinc-400 w-6 h-6'/>
+                      <div className='text-zinc-200 flex-1 text-left'>
                         Reset playlist
                       </div>
                     </button>
                   </div>
-                  <div className='h-8'></div>
-                  <div className='flex-1'></div>
-                  <button onClick={() => setMenu(false)} className='pointer-events-auto w-full flex gap-4 items-center active:opacity-50 active:scale-95 duration-100 ease-in-out'>
+                  <div className='h-6'></div>
+                  <div className='flex-4'></div>
+                  <button onClick={() => setMenu(false)} className='pointer-events-auto w-full flex gap-4 items-center active:opacity-30 duration-100 ease-in-out'>
                     <div className='text-zinc-200 flex-1 text-center'>
                       Close
                     </div>
                   </button>
+                  <div className='flex-1'></div>
                 </Dialog.Panel>
               </Transition.Child>
             </div>
@@ -683,38 +703,37 @@ function PlayerPage({playlist, updatePlaylist, resetPlaylist, updatePlaylistLoca
           <div className='relative text-center duration-1000 ease-in-out shadow-sm z-10'>
             <img className='absolute w-full h-[90%] bg-zinc-900' src={video?.thumbnails?.small ?? '/zero.png'}/>
             <div className='text-left z-10 min-h-[100svh] flex flex-col items-center backdrop-blur-3xl bg-gradient-to-b from-zinc-950/20 via-zinc-950/60 to-zinc-950'>
-              <div className='max-w-3xl w-full inline-flex flex-1 flex-col py-12 z-20'>
-                <div className='flex justify-between items-center px-7 sm:px-7 lg:px-7'>
-                  <Link to='/' className='w-10 h-10 -ml-3 flex justify-center items-center active:opacity-50 active:scale-95 duration-100 ease-in-out'>
-                    <RiArrowLeftSLine className='w-7 h-7'/>
-                  </Link>
-                  <div>
-                    <h2 className="text-center text-sm font-semibold tracking-tight">
-                      {playlist.title}
-                    </h2>
-                    <div className="text-center text-sm font-light">
-                      {playlist.channel}
-                    </div>
+              <div className='max-w-3xl w-full inline-flex flex-1 flex-col z-20'>
+                <div className='flex justify-between items-center py-5 sm:py-8 px-5 sm:px-7 gap-4'>
+                  <div className='flex flex-1 items-center'>
+                    <Link to='/' className='flex items-center gap-1 tracking-tight active:opacity-30 duration-100 ease-in-out'>
+                      <ChevronDownIcon className='w-8 h-8' size='large'/>
+                    </Link>
                   </div>
-                  <button onClick={() => setMenu(true)} className='w-10 h-10 -mr-3 flex justify-center items-center active:opacity-50 active:scale-95 duration-100 ease-in-out'>
-                    <RiMore2Fill className='w-5 h-5'/>
-                  </button>
+                  <h2 className='text-center font-semibold tracking-tight truncate'>
+                    {playlist.title}
+                  </h2>
+                  <div className='flex flex-1 items-center justify-end'>
+                    <button onClick={() => setMenu(true)} className='flex items-center gap-1 tracking-tight active:opacity-30 duration-100 ease-in-out'>
+                      <KebabHorizontalIcon className='w-6 h-8' size='large'/>
+                    </button>
+                  </div>
                 </div>
-                <div className='flex-6 min-h-12'></div>
-                <div className='px-7 sm:px-16 md:px-24'>
+                <div className='flex-4 min-h-12'></div>
+                <div className='px-10 sm:px-16 md:px-24'>
                   <div id='videoContainer' className='w-full aspect-video rounded-md shadow-2xl overflow-hidden group'>
                     {!video && <div className='w-full h-full bg-zinc-800'>
                       <div className='w-full h-full p-[20%] flex flex-col justify-center items-center text-zinc-700'>
                         <div>
-                          (No removed videos)
+                          No removed videos
                         </div>
                       </div>
                     </div>}
                     {youtubePlayer}
                   </div>
                 </div>
-                <div className='flex-6 min-h-12'></div>
-                <div className='px-7 sm:px-7 lg:px-7'>
+                <div className='flex-4 min-h-12'></div>
+                <div className='pb-4 px-5 sm:px-7'>
                   <PlayerController
                     video={video}
                     playingCallback={playingCallback}
@@ -947,38 +966,37 @@ function SessionPage() {
           <div className='relative text-center duration-1000 ease-in-out shadow-sm z-10'>
             <img className='absolute w-full h-[90%] bg-zinc-900' src={video?.thumbnails?.small ?? '/zero.png'}/>
             <div className='text-left z-10 min-h-[100svh] flex flex-col items-center backdrop-blur-3xl bg-gradient-to-b from-zinc-950/20 via-zinc-950/60 to-zinc-950'>
-              <div className='max-w-3xl w-full inline-flex flex-1 flex-col py-12 z-20'>
-                <div className='flex justify-between items-center px-7 sm:px-7 lg:px-7'>
-                  <Link to='/' className='w-10 h-10 -ml-3 flex justify-center items-center active:opacity-50 active:scale-95 duration-100 ease-in-out'>
-                    <RiArrowLeftSLine className='w-7 h-7'/>
-                  </Link>
-                  <div>
-                    <h2 className="text-center text-sm font-semibold tracking-tight">
-                      Group session
-                    </h2>
-                    <h2 className="text-center text-sm font-light">
-                      {displayedStreamId}
-                    </h2>
+              <div className='max-w-3xl w-full inline-flex flex-1 flex-col z-20'>
+                <div className='flex justify-between items-center py-5 sm:py-8 px-5 sm:px-7 gap-4'>
+                  <div className='flex flex-1 items-center'>
+                    <Link to='/' className='flex items-center gap-1 tracking-tight active:opacity-30 duration-100 ease-in-out'>
+                      <ChevronDownIcon className='w-8 h-8' size='large'/>
+                    </Link>
                   </div>
-                  <button className='w-10 h-10 -mr-3 flex justify-center items-center active:opacity-50 active:scale-95 duration-100 ease-in-out'
-                    onClick={addItems}
-                  >
-                    <RiPlayListAddLine className='w-5 h-5'/>
-                  </button>
+                  <h2 className='text-center font-semibold tracking-tight truncate'>
+                    {displayedStreamId}
+                  </h2>
+                  <div className='flex flex-1 items-center justify-end'>
+                    <button onClick={addItems} className='flex items-center gap-1 tracking-tight active:opacity-30 duration-100 ease-in-out'>
+                      <PasteIcon className='w-6 h-8' size='large'/>
+                    </button>
+                  </div>
                 </div>
-                <div className='flex-6 min-h-12'></div>
-                <div className='px-7 sm:px-16 md:px-24'>
+                <div className='flex-4 min-h-12'></div>
+                <div className='px-10 sm:px-16 md:px-24'>
                   <div id='videoContainer' className='w-full aspect-video rounded-md shadow-2xl overflow-hidden group'>
                     {!video && <div className='w-full h-full bg-zinc-800'>
-                      <div className='w-full h-full p-[20%] flex justify-center items-center'>
-                        <RiPlayListAddLine className='h-full aspect-square flex-1 text-zinc-700'/>
+                      <div className='w-full h-full p-[20%] flex flex-col justify-center items-center text-zinc-700'>
+                        <div className='text-center'>
+                          Press the clipboard icon to add a video
+                        </div>
                       </div>
                     </div>}
                     {youtubePlayer}
                   </div>
                 </div>
-                <div className='flex-6 min-h-12'></div>
-                <div className='px-7 sm:px-7 lg:px-7'>
+                <div className='flex-4 min-h-12'></div>
+                <div className='pb-4 px-5 sm:px-7'>
                   <PlayerController
                     video={video}
                     playingCallback={playingCallback}
@@ -1136,48 +1154,50 @@ function ImportPage({updatePlaylist, resetPlaylist}) {
     document.title = 'Import a playlist · Yuu';
   }, [])
   return (
-    <div className="w-full max-w-3xl py-12 px-7 sm:px-7 lg:px-7 space-y-8 mb-8">
+    <div className='w-full grow max-w-3xl flex flex-col py-5 sm:py-8 px-5 sm:px-7 gap-8 mb-8'>
       <div className='flex justify-between items-center'>
-        <Link to='/' className='p-3 -ml-3 active:opacity-50 active:scale-95 duration-100 ease-in-out'>
-          <RiArrowLeftSLine className='w-7 h-7'/>
-        </Link>
+        <div className='flex flex-1 items-center'>
+          <Link to='/' className='flex items-center gap-1 text-red-500 tracking-tight active:opacity-30 duration-100 ease-in-out'>
+            <div className='h-8'/>
+            <ChevronLeftIcon className='w-8 h-8 -mx-2' size='large'/>
+          </Link>
+        </div>
         <div>
-          <h2 className="text-center text-2xl font-semibold tracking-tighter">
+          <h2 className='text-center font-semibold tracking-tight'>
             Import a playlist
           </h2>
         </div>
-        <a href='https://github.com/jwseph/youtube-player' className='invisible p-3 -mr-3 active:opacity-50 active:scale-95 duration-100 ease-in-out'>
-          <RiGithubLine className='w-7 h-7'/>
-        </a>
+        <div className='flex-1'></div>
       </div>
-      <form className="mt-8 space-y-8" onSubmit={e => e.preventDefault()}>
+      <form className='w-full grow flex flex-col justify-center gap-8 mt-8 text-md' onSubmit={e => e.preventDefault()}>
         <div className="-space-y-1 rounded-sm shadow-lg">
-          <div>
-            <label htmlFor="playlistUrl" className="sr-only">Enter a YouTube playlist URL</label>
-            <input onChange={e => setPlaylistUrl(e.target.value.trim())} id="playlistUrl" name="playlistUrl" type="text" autoComplete="off" className="relative block w-full rounded-md border-0 py-1.5 bg-zinc-900 text-zinc-200 ring-1 ring-inset ring-zinc-700 placeholder:text-zinc-500 focus:z-20 focus:ring-2 focus:ring-inset focus:ring-red-600 text-sm shadow-sm leading-6 px-3" placeholder='Enter a YouTube playlist URL'/>
+          <div className='flex px-4 py-2.5 gap-4 bg-zinc-900 rounded-lg leading-6'>
+            <label htmlFor='playlistUrl' className='text-zinc-200 whitespace-nowrap'>URL</label>
+            <input autoFocus onChange={e => setPlaylistUrl(e.target.value.trim())} id="playlistUrl" name="playlistUrl" type="text" autoComplete="off" size="1" className="flex-1 border-0 bg-transparent p-0 text-zinc-200 placeholder:text-zinc-700 focus:z-20" placeholder='Enter a YouTube playlist URL'/>
           </div>
         </div>
-        <div className='flex gap-7'>
-          <div className='flex-1'>
-            <button className="relative flex w-full justify-center rounded-md bg-red-700 py-2 px-3 text-sm font-medium text-red-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 active:opacity-50 active:scale-95 duration-100 ease-in-out"
+        <div className='grid gap-7 sm:grid-cols-2'>
+          <div className='flex-1 space-y-3'>
+            <button className="relative flex w-full justify-center rounded-lg bg-red-600 py-2.5 px-3 font-medium text-zinc-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 active:opacity-30 duration-100 ease-in-out"
               onClick={async () => {
+                console.log('updating...');
                 await updatePlaylist(playlistUrl);
                 navigate('/');
               }}
             >
               Add / Update
             </button>
-            <div className='py-3 space-y-2'>
-              <p className='md:px-4 text-xs text-zinc-500'>
+            <div className='space-y-2'>
+              <p className='px-4 text-xs text-zinc-500'>
                 Add a new playlist or update an existing one.
               </p>
-              <p className='md:px-4 text-xs text-zinc-500'>
+              <p className='px-4 text-xs text-zinc-500'>
                 The playlist must be public.
               </p>
             </div>
           </div>
-          <div className='flex-1'>
-            <button className="relative flex w-full justify-center rounded-md bg-zinc-800 py-2 px-3 text-sm font-medium text-zinc-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 active:opacity-50 active:scale-95 duration-100 ease-in-out"
+          <div className='flex-1 space-y-3'>
+            <button className="relative flex w-full justify-center rounded-lg bg-zinc-300 py-2.5 px-3 font-medium text-zinc-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 active:opacity-30 duration-100 ease-in-out"
               onClick={async () => {
                 await resetPlaylist(playlistUrl);
                 navigate('/');
@@ -1185,12 +1205,12 @@ function ImportPage({updatePlaylist, resetPlaylist}) {
             >
               Reset
             </button>
-            <div className='py-3 space-y-2'>
-              <p className='md:px-4 text-xs text-zinc-500'>
-                Reset a playlist.
+            <div className='space-y-2'>
+              <p className='px-4 text-xs text-zinc-500'>
+                Fully reset a playlist.
               </p>
-              <p className='md:px-4 text-xs text-zinc-500'>
-                Unlike "Add / Update", this resets the metadata of existing videos, making it slower.
+              <p className='px-4 text-xs text-zinc-500'>
+                This is slower than "Add / Update" because it resets the data of existing videos as well as untracked videos.
               </p>
             </div>
           </div>
@@ -1284,7 +1304,7 @@ function App() {
 
   return (
     <div className="flex flex-col min-h-full items-center justify-center bg-zinc-950 selection:bg-zinc-300/25 selection:text-zinc-50">
-      <div className='w-full flex-1 flex flex-col min-h-full items-center justify-center'>
+      <div className='w-full grow flex flex-col min-h-full items-center justify-center'>
         <Routes>
           <Route path='/' element={<SelectPlaylistPage playlists={playlists} syncPlaylists={syncPlaylists}/>}></Route>
           <Route path='/play' element={<PlaylistLoadingPage setPlaylists={setPlaylists} updatePlaylist={updatePlaylist} resetPlaylist={resetPlaylist} loadPlaylistVideos={loadPlaylistVideos}/>}></Route>
@@ -1294,8 +1314,8 @@ function App() {
         </Routes>
       </div>
       <div className='flex flex-col items-center pb-4'>
-        <a href='https://github.com/jwseph/youtube-player' className='p-2 active:opacity-50 active:scale-95 duration-100 ease-in-out text-zinc-500'>
-          <RiGithubLine className='w-5 h-5'/>
+        <a href='https://github.com/jwseph/youtube-player' className='p-2 active:opacity-30 duration-100 ease-in-out text-zinc-800'>
+          <MarkGithubIcon className='w-6 h-6'/>
         </a>
       </div>
       <div id='toastWrapper'>

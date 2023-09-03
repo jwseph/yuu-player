@@ -7,7 +7,7 @@ export default {
   theme: {
     extend: {
       flex: {
-        '6': '6 6 0%',
+        '4': '4 4 0%',
       },
       minHeight: {
         '12': '3rem',
