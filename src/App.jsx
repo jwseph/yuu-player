@@ -160,46 +160,55 @@ function PlaylistQueue({queue, videos, index, onClick, onRemove}) {
         return (
           <button key={videoId}
             className={classNames(
-              'group active:opacity-30 duration-100 ease-in-out mb-px last:mb-0 px-5 sm:px-7 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 focus-visible:z-20 rounded-none sm:rounded-md lg:rounded-md',
-              index == i ? 'bg-zinc-900' : 'bg-zinc-950',
+              'group relative activeopacity-30 duration-100 ease-in-out mb-px last:mb-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 focus-visible:z-20 sm:rounded-md overflow-clip',
+              // index == i ? 'bg-zinc-900' : 'bg-zinc-950',
             )}
             onClick={() => onClick(i)}
           >
-            <div className='flex flex-1 items-center gap-3'>
-              <div className='hidden sm:block -ml-5 sm:-ml-7 w-10 text-xs text-zinc-500 text-right'>{i+1}</div>
-              <div className='py-4'>
-                <div className='relative'>
-                  <div className={classNames(
-                    'absolute bg-zinc-900/50 w-full h-full flex items-center justify-center duration-100',
-                    index == i ? 'opacity-100' : 'opacity-0',
-                  )}>
-                    <RiPlayFill className='w-6 h-6 text-zinc-50/75 drop-shadow-sm'/>
-                  </div>
-                  <LazyLoadImage
-                    className='h-7 aspect-video rounded-sm'
-                    src={video.thumbnails.small}
-                  />
+            {index == i && <>
+              <LazyLoadImage src={video.thumbnails.small} className='absolute w-full h-full bg-zinc-900 opacity-20'/>
+              <div className='absolute w-full h-full bg-zinc-900/40 backdrop-blur-2xl'></div>
+              <div className='absolute w-full h-full opacity-0 group-active:opacity-70 bg-zinc-950 duration-100 ease-in-out'></div>
+            </>}
+            <div className='px-5 sm:px-7'>
+              <div className='relative flex flex-1 items-center gap-3 z-20 group-active:opacity-30 duration-100 ease-in-out'>
+                <div className={classNames('hidden sm:block -ml-5 sm:-ml-7 w-10 text-xs text-right text-zinc-500', index == i && 'sm:text-zinc-400')}>
+                  {i+1}
                 </div>
+                <div className='py-4'>
+                  <div className='relative'>
+                    <div className={classNames(
+                      'absolute bg-zinc-900/50 w-full h-full flex items-center justify-center duration-100',
+                      index == i ? 'opacity-100' : 'opacity-0',
+                    )}>
+                      <RiPlayFill className='w-6 h-6 text-zinc-50/75 drop-shadow-sm'/>
+                    </div>
+                    <LazyLoadImage
+                      className='h-7 aspect-video rounded-sm'
+                      src={video.thumbnails.small}
+                    />
+                  </div>
+                </div>
+                <div className='py-4 inline-flex flex-col flex-1 truncate'>
+                  <h1 className={classNames('truncate text-xs text-left flex-1 text-zinc-300', index == i && 'sm:text-zinc-200')}>{video.title}</h1>
+                  <span className={classNames('truncate text-xs text-left text-zinc-500', index == i && 'sm:text-zinc-400')}>{video.channel}</span>
+                </div>
+                {/* <div className='pl-2 text-xs text-zinc-500 text-left group-hover:hidden'>{i+1}</div> */}
+                {onRemove ? (
+                  <button
+                    className='p-4 hidden group-hover:block translate-x-4'
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRemove(i);
+                    }}
+                  >
+                    <RiCloseFill className='text-zinc-500 w-6 h-6'/>
+                  </button>
+                ) : (
+                  <></>
+                  // <div className='pl-2 text-xs text-zinc-500 text-left hidden group-hover:block'>{i+1}</div>
+                )}
               </div>
-              <div className='py-4 inline-flex flex-col flex-1 truncate'>
-                <h1 className='truncate text-xs text-left flex-1 text-zinc-300'>{video.title}</h1>
-                <span className='truncate text-xs text-left text-zinc-500'>{video.channel}</span>
-              </div>
-              {/* <div className='pl-2 text-xs text-zinc-500 text-left group-hover:hidden'>{i+1}</div> */}
-              {onRemove ? (
-                <button
-                  className='p-4 hidden group-hover:block translate-x-4'
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onRemove(i);
-                  }}
-                >
-                  <RiCloseFill className='text-zinc-500 w-6 h-6'/>
-                </button>
-              ) : (
-                <></>
-                // <div className='pl-2 text-xs text-zinc-500 text-left hidden group-hover:block'>{i+1}</div>
-              )}
             </div>
           </button>
         )
