@@ -21,7 +21,7 @@ const getPlaylistId = (url) => new URL(url).searchParams.get('list');
 
 const getVideoId = (url) => {
   if (!url) return url;
-  let parts = url.split('/');
+  let parts = new URL(url).pathname.split('/');
   return parts[parts.length-1];
 }
 
