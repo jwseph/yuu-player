@@ -1,6 +1,8 @@
 # [Yuu Player](https://yuu.pages.dev/)
 A YouTube playlist player made with React and Tailwind
 
+![Player page of Yuu Player](https://i.imgur.com/sljqXUG.png)
+
 ## Important features
 - True shuffle
   - YouTube and YouTube Music only shuffle playlists in a range of ±200 from the current video.
