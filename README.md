@@ -17,6 +17,8 @@ A YouTube playlist player made with React and Tailwind
 ## Todo
 - Improve UI in general
 - See if it is necessary to patch using links with broken playlist ids
+- Fix weird jumping around playlist item glitch
+- Split code into multiple files for readability
 
 ## Known bugs
 - If you manually end a video while it is loading, the player may begin repeatedly skipping videos
